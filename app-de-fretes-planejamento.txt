@@ -1,0 +1,177 @@
+================================================================
+APP DE FRETES — PLANEJAMENTO ESTRATÉGICO
+================================================================
+
+----------------------------------------------------------------
+1. ARQUITETURA DO SISTEMA
+----------------------------------------------------------------
+
+FLUXO PRINCIPAL:
+Cliente manda WhatsApp pra você
+  → Você cadastra o orçamento no painel
+  → Clica em "Aprovar e Enviar"
+  → Supabase Edge Function dispara
+  → uazap API envia mensagem pra TODOS os motoristas cadastrados
+
+STACK TECNOLÓGICA:
+- Frontend / Painel Admin: Next.js
+- Banco de Dados: Supabase (PostgreSQL)
+- Funções Backend: Supabase Edge Functions
+- Envio de WhatsApp: API uazap
+
+----------------------------------------------------------------
+2. BANCO DE DADOS
+----------------------------------------------------------------
+
+TABELA: motoristas
+- id (uuid)
+- nome (text)
+- whatsapp (text) — ex: 5511999999999
+- tipo_veiculo (text)
+- ativo (boolean)
+
+TABELA: orcamentos
+- id (uuid)
+- cliente_nome (text)
+- cliente_whatsapp (text)
+- origem (text)
+- destino (text)
+- descricao (text)
+- status (text) — pendente → enviado → concluído
+
+----------------------------------------------------------------
+3. CADASTRO DO MOTORISTA — CAMPOS
+----------------------------------------------------------------
+
+DADOS PESSOAIS:
+- Nome completo
+- CPF
+- Data de nascimento
+- WhatsApp
+- E-mail (opcional)
+- Cidade / Estado
+- Foto de perfil (opcional)
+
+DOCUMENTAÇÃO:
+- Número CNH
+- Categoria CNH (B / C / D / E)
+  B = utilitários; C, D, E = caminhões pesados
+- Validade CNH
+- Número RNTRC/ANTT (obrigatório por lei para frete remunerado)
+
+DADOS DO VEÍCULO:
+- Tipo de veículo (ver lista abaixo)
+- Placa
+- Ano do veículo
+- Tipo de carroceria (Baú, Sider, Aberto, Frigorífico, Tanque, Graneleiro)
+- Capacidade de carga em kg
+
+TIPOS DE VEÍCULO E CAPACIDADES (classificação ANTT):
+- Moto                      → até 30 kg      → Delivery urbano rápido
+- Utilitário/Furgão (Fiorino) → até 700 kg   → Entregas urbanas leves
+- Van / VUC (¾)             → até 1.500 kg   → Pequenos fretes e mudanças
+- VUC (Caminhão ¾)          → até 3.000 kg   → Entregas urbanas médias
+- Toco (Semipesado)         → até 6.000 kg   → Carga seca, mudanças, baú
+- Truck (6x2)               → até 14.000 kg  → Longas distâncias, granel
+- Bitruck (4 eixos)         → até 22.000 kg  → Granéis, tanque
+- Carreta Simples           → até 25.000 kg  → Longas distâncias
+- Bitrem (7 eixos)          → até 57.000 kg  → Grandes cargas
+
+CONFIGURAÇÕES OPERACIONAIS:
+- Regiões de atuação (cidades/estados)
+- Aceita carga fracionada? (Sim/Não)
+- Aceita carga refrigerada? (Sim/Não)
+- Disponibilidade: Ativo / Inativo / Férias
+- Data de cadastro (automático)
+
+----------------------------------------------------------------
+4. MODELOS DE COBRANÇA
+----------------------------------------------------------------
+
+OPÇÃO 1 — Por Km
+Valor base por km conforme o tipo de veículo.
+Ex: Van = R$ 3,50/km | Toco = R$ 5,00/km
++ Justo e transparente
+- Precisa integrar Google Maps para calcular distância
+
+OPÇÃO 2 — Tabela Fixa por Faixa de Distância
+Ex:
+  Até 10 km    → Van R$ 80   | Toco R$ 150
+  10 a 30 km   → Van R$ 150  | Toco R$ 280
+  30 a 60 km   → Van R$ 250  | Toco R$ 450
+  Acima 60 km  → Sob consulta
++ Simples, sem integração
+- Menos preciso
+
+OPÇÃO 3 — Assinatura Mensal do Motorista
+Motorista paga mensalidade para ficar na plataforma.
+Ex: R$ 49/mês por motorista ativo.
++ Receita previsível
+- Difícil de vender no início
+
+OPÇÃO 4 — Comissão por Frete Fechado
+Percentual sobre o valor do frete quando fechado.
+Ex: 10% sobre R$ 500 = R$ 50 para você.
++ Sem risco para o motorista
+- Difícil controlar acordos diretos
+
+RECOMENDAÇÃO PARA MVP:
+Tabela fixa por faixa + tipo de veículo (zero integração necessária).
+Monetização: mensalidade do motorista quando o volume estiver consolidado.
+
+----------------------------------------------------------------
+5. ESTRATÉGIA DE MONETIZAÇÃO EM FASES
+----------------------------------------------------------------
+
+FASE 1 — TRAÇÃO (agora):
+- Motorista cadastra GRÁTIS, sem mensalidade
+- Foco em construir base de motoristas
+- Como sustentar: cobrar taxa de conveniência do cliente
+  Ex: frete sai R$ 300, você cobra R$ 320 e fica com R$ 20
+
+FASE 2 — QUANDO TIVER MOVIMENTO:
+- Modelo Freemium com limite gratuito
+  → Motorista grátis recebe até 5 notificações/mês
+  → Paga R$ 29/mês para receber ilimitado
+- O motorista já viu resultado, já fechou frete → pagar faz sentido
+
+FASE 3 — ESCALA:
+- Mensalidade consolidada
+- Planos por região e volume
+- Destaque pago no envio de notificações
+
+LÓGICA DO MODELO:
+Primeiro você prova que a plataforma GERA FRETE para o motorista.
+Depois ele paga para NÃO PERDER frete.
+(Mesmo modelo usado por Uber, iFood e 99 no início)
+
+----------------------------------------------------------------
+6. IDEIAS ADICIONAIS PARA IMPLEMENTAR
+----------------------------------------------------------------
+
+CORE (essencial):
+- Filtro por tipo de veículo ao disparar orçamento
+- Filtro por região de atuação
+- Mensagem personalizada com dados do frete
+- Histórico de status dos orçamentos
+
+DIFERENCIAIS:
+- Motorista sinaliza interesse pelo frete via WhatsApp
+- Limite de candidatos por orçamento
+- Histórico por motorista (fretes realizados, taxa de resposta)
+- Avaliação do cliente sobre o motorista
+
+GESTÃO:
+- Dashboard com métricas mensais
+- Relatório exportável
+- Agendamento de frete para data futura
+- Foto da carga anexada ao orçamento
+
+AUTOMAÇÃO FUTURA:
+- Bot no WhatsApp para receber orçamentos automaticamente
+- Notificação automática ao cliente quando motorista aceitar
+- Integração com Google Maps para calcular distância e sugerir preço
+
+================================================================
+FIM DO DOCUMENTO
+================================================================
