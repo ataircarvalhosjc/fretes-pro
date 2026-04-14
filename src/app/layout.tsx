@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Barlow_Condensed, DM_Sans } from 'next/font/google'
 import './globals.css'
-import { AppShell } from '@/components/AppShell'
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ['latin'],
@@ -16,7 +15,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'FretesPro — Painel de Controle',
+  title: 'FretesPro',
   description: 'Plataforma de gestão de fretes e motoristas parceiros',
 }
 
@@ -31,7 +30,7 @@ export default function RootLayout({
       className={`${barlowCondensed.variable} ${dmSans.variable}`}
     >
       <body className="font-body">
-        <AppShell>{children}</AppShell>
+        {children}
       </body>
     </html>
   )

@@ -6,7 +6,15 @@
       "Bash(npm run:*)",
       "Bash(timeout 3 curl -s http://localhost:49231/orcamentos/novo)",
       "Bash(Start-Sleep -Seconds 3)",
-      "Bash(curl -s \"https://jxymctdwlwjoahdahyts.supabase.co/rest/v1/motoristas?select=nome,tipo_veiculo,disponibilidade&limit=10\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4eW1jdGR3bHdqb2FoZGFoeXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjY2MzgsImV4cCI6MjA5MDU0MjYzOH0.kSmCZkbhLv9gYc8Qt2J5eeU5Q8DZewGIz7A_fHq2qWs\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4eW1jdGR3bHdqb2FoZGFoeXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjY2MzgsImV4cCI6MjA5MDU0MjYzOH0.kSmCZkbhLv9gYc8Qt2J5eeU5Q8DZewGIz7A_fHq2qWs\")"
+      "Bash(curl -s \"https://jxymctdwlwjoahdahyts.supabase.co/rest/v1/motoristas?select=nome,tipo_veiculo,disponibilidade&limit=10\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4eW1jdGR3bHdqb2FoZGFoeXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjY2MzgsImV4cCI6MjA5MDU0MjYzOH0.kSmCZkbhLv9gYc8Qt2J5eeU5Q8DZewGIz7A_fHq2qWs\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4eW1jdGR3bHdqb2FoZGFoeXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NjY2MzgsImV4cCI6MjA5MDU0MjYzOH0.kSmCZkbhLv9gYc8Qt2J5eeU5Q8DZewGIz7A_fHq2qWs\")",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)",
+      "Bash(rtk next:*)",
+      "Bash(rtk git:*)",
+      "Bash(cp -r motoristas \"\\(admin\\)/motoristas\")",
+      "Bash(cp -r orcamentos \"\\(admin\\)/orcamentos\")",
+      "Bash(cp -r configuracoes \"\\(admin\\)/configuracoes\")",
+      "Bash(cp page.tsx \"\\(admin\\)/page.tsx\")"
     ]
   }
 }

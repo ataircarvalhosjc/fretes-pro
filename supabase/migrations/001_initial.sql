@@ -82,7 +82,7 @@ CREATE INDEX IF NOT EXISTS idx_notificacoes_orcamento     ON notificacoes(orcame
 
 INSERT INTO motoristas (nome, whatsapp, tipo_veiculo, placa, cidade, estado, categoria_cnh, disponibilidade, aceita_fracionado, aceita_refrigerado)
 VALUES
-  ('João Silva', '5511999990001', 'van', 'ABC1234', 'São Paulo', 'SP', 'B', 'ativo', TRUE, FALSE),
+  ('João Silva', '5511999990001', 'utilitario', 'ABC1234', 'São Paulo', 'SP', 'B', 'ativo', TRUE, FALSE),
   ('Pedro Souza', '5511999990002', 'toco', 'DEF5678', 'São Paulo', 'SP', 'C', 'ativo', FALSE, FALSE),
   ('Maria Santos', '5511999990003', 'moto', 'GHI9012', 'São Paulo', 'SP', 'B', 'ativo', TRUE, FALSE),
   ('Carlos Lima', '5521999990004', 'truck', 'JKL3456', 'Rio de Janeiro', 'RJ', 'E', 'inativo', FALSE, TRUE)
