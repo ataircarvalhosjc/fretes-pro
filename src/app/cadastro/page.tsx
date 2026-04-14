@@ -1,25 +1,38 @@
 'use client'
 
 import { useState } from 'react'
-import { TIPOS_VEICULO } from '@/types'
-
-type Step = 'form' | 'success'
+import { TIPOS_VEICULO, CATEGORIAS_CNH, TIPOS_CARROCERIA, ESTADOS_BR } from '@/types'
 
 export default function CadastroMotoristaPage() {
-  const [step, setStep] = useState<Step>('form')
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
   const [form, setForm] = useState({
     nome: '',
+    cpf: '',
+    data_nascimento: '',
     whatsapp: '',
-    tipo_veiculo: 'moto',
+    email: '',
+    cidade: '',
+    estado: '',
+    numero_cnh: '',
+    categoria_cnh: '',
+    validade_cnh: '',
+    rntrc: '',
+    tipo_veiculo: '',
     placa: '',
+    ano_veiculo: '',
+    tipo_carroceria: '',
+    capacidade_kg: '',
+    aceita_fracionado: false,
+    aceita_refrigerado: false,
+    disponibilidade: 'ativo',
   })
 
-  function set(field: string, value: string) {
+  function set(field: string, value: string | boolean) {
     setForm((prev) => ({ ...prev, [field]: value }))
-    setErro('')
+    setError('')
   }
 
   function formatarWhatsApp(value: string) {
@@ -31,33 +44,51 @@ export default function CadastroMotoristaPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nome || !form.whatsapp) {
-      setErro('Preencha nome e WhatsApp.')
+    if (!form.nome || !form.whatsapp || !form.tipo_veiculo) {
+      setError('Preencha nome, WhatsApp e tipo de veículo.')
       return
     }
-    setLoading(true)
+    setSaving(true)
     try {
       const res = await fetch('/api/cadastro-motorista', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nome: form.nome,
+          cpf: form.cpf || null,
+          data_nascimento: form.data_nascimento || null,
           whatsapp: form.whatsapp.replace(/\D/g, ''),
+          email: form.email || null,
+          cidade: form.cidade || null,
+          estado: form.estado || null,
+          numero_cnh: form.numero_cnh || null,
+          categoria_cnh: form.categoria_cnh || null,
+          validade_cnh: form.validade_cnh || null,
+          rntrc: form.rntrc || null,
           tipo_veiculo: form.tipo_veiculo,
-          placa: form.placa || null,
+          placa: form.placa ? form.placa.toUpperCase() : null,
+          ano_veiculo: form.ano_veiculo ? parseInt(form.ano_veiculo) : null,
+          tipo_carroceria: form.tipo_carroceria || null,
+          capacidade_kg: form.capacidade_kg ? parseInt(form.capacidade_kg) : null,
+          aceita_fracionado: form.aceita_fracionado,
+          aceita_refrigerado: form.aceita_refrigerado,
+          disponibilidade: form.disponibilidade,
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar')
-      setStep('success')
+      setSuccess(true)
     } catch (err: unknown) {
-      setErro(err instanceof Error ? err.message : 'Erro ao enviar')
+      setError(err instanceof Error ? err.message : 'Erro ao enviar cadastro')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
-  if (step === 'success') {
+  const input = 'w-full bg-[#2a2a2a] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 transition'
+  const select = 'w-full bg-[#2a2a2a] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500 transition appearance-none'
+
+  if (success) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
         <div className="text-center">
@@ -67,7 +98,7 @@ export default function CadastroMotoristaPage() {
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-white mb-3">Cadastro realizado!</h2>
-          <p className="text-orange-400 font-semibold text-lg mb-2">FretesPro</p>
+          <p className="text-orange-400 font-semibold text-lg mb-4">FretesPro</p>
           <p className="text-gray-400 text-sm max-w-xs mx-auto">
             Você será notificado pelo WhatsApp assim que surgir um frete disponível para o seu veículo.
           </p>
@@ -77,123 +108,203 @@ export default function CadastroMotoristaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center py-12 px-4">
 
-      {/* Ícone */}
+      {/* Ícone + Título */}
       <div className="w-16 h-16 rounded-full bg-orange-500/20 border-2 border-orange-500 flex items-center justify-center mb-5">
         <svg className="w-8 h-8 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
             d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
         </svg>
       </div>
+      <h1 className="text-3xl font-extrabold text-orange-400 tracking-widest uppercase mb-1">Seja um Motorista</h1>
+      <p className="text-gray-500 text-sm mb-10">FretesPro — Receba fretes direto no seu WhatsApp</p>
 
-      {/* Título */}
-      <h1 className="text-3xl font-extrabold text-orange-400 tracking-widest uppercase mb-1">
-        Seja um Motorista
-      </h1>
-      <p className="text-gray-400 text-sm mb-8">FretesPro — Receba fretes no WhatsApp</p>
+      <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
 
-      {/* Card formulário */}
-      <div className="w-full max-w-sm bg-[#1a1a1a] rounded-2xl p-6 space-y-4 shadow-2xl border border-white/5">
-
-        {/* Nome */}
-        <div>
-          <label className="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">
-            Nome completo <span className="text-orange-500">*</span>
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* DADOS PESSOAIS */}
+        <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center">
+              <svg className="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-            </span>
-            <input
-              type="text"
-              placeholder="Seu nome"
-              value={form.nome}
-              onChange={(e) => set('nome', e.target.value)}
-              className="w-full bg-[#2a2a2a] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
-            />
+            </div>
+            <span className="text-orange-400 font-bold text-sm uppercase tracking-widest">Dados Pessoais</span>
+          </div>
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Nome completo <span className="text-orange-500">*</span></label>
+              <input className={input} placeholder="Nome como no documento" value={form.nome} onChange={(e) => set('nome', e.target.value)} required />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">CPF</label>
+              <input className={input} placeholder="000.000.000-00" value={form.cpf} onChange={(e) => set('cpf', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Data de nascimento</label>
+              <input type="date" className={input} value={form.data_nascimento} onChange={(e) => set('data_nascimento', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">WhatsApp <span className="text-orange-500">*</span></label>
+              <input className={input} placeholder="(11) 99999-9999" value={form.whatsapp} onChange={(e) => set('whatsapp', formatarWhatsApp(e.target.value))} inputMode="tel" required />
+              <p className="text-xs text-gray-600 mt-1">Formato: (11) 99999-9999</p>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">E-mail</label>
+              <input type="email" className={input} placeholder="email@exemplo.com" value={form.email} onChange={(e) => set('email', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Cidade</label>
+              <input className={input} placeholder="Ex: São Paulo" value={form.cidade} onChange={(e) => set('cidade', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Estado</label>
+              <select className={select} value={form.estado} onChange={(e) => set('estado', e.target.value)}>
+                <option value="">Selecione...</option>
+                {ESTADOS_BR.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* WhatsApp */}
-        <div>
-          <label className="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">
-            WhatsApp <span className="text-orange-500">*</span>
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+        {/* DOCUMENTAÇÃO */}
+        <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center">
+              <svg className="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-            </span>
-            <input
-              type="tel"
-              inputMode="numeric"
-              placeholder="(12) 99999-9999"
-              value={form.whatsapp}
-              onChange={(e) => set('whatsapp', formatarWhatsApp(e.target.value))}
-              className="w-full bg-[#2a2a2a] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 transition"
-            />
+            </div>
+            <span className="text-orange-400 font-bold text-sm uppercase tracking-widest">Documentação</span>
+          </div>
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Número da CNH</label>
+              <input className={input} placeholder="Número da habilitação" value={form.numero_cnh} onChange={(e) => set('numero_cnh', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Categoria da CNH</label>
+              <select className={select} value={form.categoria_cnh} onChange={(e) => set('categoria_cnh', e.target.value)}>
+                <option value="">Selecione...</option>
+                {CATEGORIAS_CNH.map((c) => <option key={c} value={c}>Categoria {c}</option>)}
+              </select>
+              <p className="text-xs text-gray-600 mt-1">B=utilitários / C,D,E=pesados</p>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Validade da CNH</label>
+              <input type="date" className={input} value={form.validade_cnh} onChange={(e) => set('validade_cnh', e.target.value)} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">RNTRC / ANTT</label>
+              <input className={input} placeholder="Número do RNTRC" value={form.rntrc} onChange={(e) => set('rntrc', e.target.value)} />
+              <p className="text-xs text-gray-600 mt-1">Obrigatório por lei para frete remunerado</p>
+            </div>
           </div>
         </div>
 
-        {/* Tipo de veículo */}
-        <div>
-          <label className="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">
-            Tipo de veículo <span className="text-orange-500">*</span>
-          </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        {/* DADOS DO VEÍCULO */}
+        <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center">
+              <svg className="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 .001M13 16l2-5h4l2 5" />
               </svg>
-            </span>
-            <select
-              value={form.tipo_veiculo}
-              onChange={(e) => set('tipo_veiculo', e.target.value)}
-              className="w-full bg-[#2a2a2a] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500 transition appearance-none"
-            >
-              {TIPOS_VEICULO.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+            </div>
+            <span className="text-orange-400 font-bold text-sm uppercase tracking-widest">Dados do Veículo</span>
+          </div>
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Tipo de veículo <span className="text-orange-500">*</span></label>
+              <select className={select} value={form.tipo_veiculo} onChange={(e) => set('tipo_veiculo', e.target.value)} required>
+                <option value="">Selecione...</option>
+                {TIPOS_VEICULO.map((t) => <option key={t.value} value={t.value}>{t.label} — {t.capacidade}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Tipo de carroceria</label>
+              <select className={select} value={form.tipo_carroceria} onChange={(e) => set('tipo_carroceria', e.target.value)}>
+                <option value="">Selecione...</option>
+                {TIPOS_CARROCERIA.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Placa</label>
+              <input className={`${input} uppercase tracking-widest`} placeholder="ABC-1234" value={form.placa} onChange={(e) => set('placa', e.target.value.toUpperCase())} maxLength={8} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Ano do veículo</label>
+              <input type="number" className={input} placeholder="Ex: 2020" value={form.ano_veiculo} onChange={(e) => set('ano_veiculo', e.target.value)} min={1980} max={new Date().getFullYear() + 1} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Capacidade de carga (kg)</label>
+              <input type="number" className={input} placeholder="Em kg" value={form.capacidade_kg} onChange={(e) => set('capacidade_kg', e.target.value)} min={0} />
+            </div>
           </div>
         </div>
 
-        {/* Placa */}
-        <div>
-          <label className="block text-xs text-gray-400 uppercase tracking-wider mb-1.5">
-            Placa do veículo <span className="text-orange-500">*</span>
-          </label>
-          <input
-            type="text"
-            placeholder="ABC-1234"
-            value={form.placa}
-            onChange={(e) => set('placa', e.target.value.toUpperCase())}
-            maxLength={8}
-            className="w-full bg-[#2a2a2a] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 transition uppercase tracking-widest"
-          />
+        {/* CONFIGURAÇÕES OPERACIONAIS */}
+        <div className="bg-[#1a1a1a] rounded-2xl border border-white/5 overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/5 flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center">
+              <svg className="w-4 h-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <span className="text-orange-400 font-bold text-sm uppercase tracking-widest">Configurações Operacionais</span>
+          </div>
+          <div className="p-6 space-y-4">
+            <div>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-2">Disponibilidade</label>
+              <div className="flex gap-3">
+                {(['ativo', 'inativo', 'ferias'] as const).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => set('disponibilidade', d)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize border transition-all ${
+                      form.disponibilidade === d
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'bg-[#2a2a2a] text-gray-400 border-white/10 hover:border-orange-500/50'
+                    }`}
+                  >
+                    {d === 'ferias' ? 'Férias' : d.charAt(0).toUpperCase() + d.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-600 text-orange-500 bg-[#2a2a2a] focus:ring-orange-500 focus:ring-offset-0" checked={form.aceita_fracionado} onChange={(e) => set('aceita_fracionado', e.target.checked)} />
+                <span className="text-sm text-gray-300">Aceita carga fracionada</span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 rounded border-gray-600 text-orange-500 bg-[#2a2a2a] focus:ring-orange-500 focus:ring-offset-0" checked={form.aceita_refrigerado} onChange={(e) => set('aceita_refrigerado', e.target.checked)} />
+                <span className="text-sm text-gray-300">Aceita carga refrigerada</span>
+              </label>
+            </div>
+          </div>
         </div>
 
-        {erro && (
-          <p className="text-red-400 text-xs text-center">{erro}</p>
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400 text-center">
+            {error}
+          </div>
         )}
 
-        {/* Botão */}
         <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl text-sm tracking-wide transition-all mt-2"
+          type="submit"
+          disabled={saving}
+          className="w-full bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold py-4 rounded-xl text-sm tracking-wide transition-all"
         >
-          {loading ? 'Enviando...' : 'Quero ser motorista'}
+          {saving ? 'Enviando...' : 'Quero ser motorista'}
         </button>
 
-        <p className="text-center text-xs text-gray-600 pt-1">
+        <p className="text-center text-xs text-gray-600 pb-8">
           Ao se cadastrar você concorda em receber notificações de frete via WhatsApp.
         </p>
-      </div>
+
+      </form>
     </div>
   )
 }
