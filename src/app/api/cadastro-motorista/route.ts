@@ -11,28 +11,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
   }
 
-  const { nome, whatsapp, tipo_veiculo, cidade, estado, categoria_cnh, email, placa, cpf } = body
+  const { nome, whatsapp, tipo_veiculo } = body
 
   if (!nome || !whatsapp || !tipo_veiculo) {
     return NextResponse.json({ error: 'Nome, WhatsApp e tipo de veículo são obrigatórios' }, { status: 400 })
   }
 
-  // Formatar whatsapp: remover tudo que não é número
   const whatsappFormatado = String(whatsapp).replace(/\D/g, '')
 
   const { data, error } = await supabase
     .from('motoristas')
     .insert({
-      nome,
+      nome: body.nome,
+      cpf: body.cpf || null,
+      data_nascimento: body.data_nascimento || null,
       whatsapp: whatsappFormatado,
-      tipo_veiculo,
-      cidade: cidade || null,
-      estado: estado || null,
-      categoria_cnh: categoria_cnh || null,
-      email: email || null,
-      placa: placa || null,
-      cpf: cpf || null,
-      disponibilidade: 'ativo',
+      email: body.email || null,
+      cidade: body.cidade || null,
+      estado: body.estado || null,
+      numero_cnh: body.numero_cnh || null,
+      categoria_cnh: body.categoria_cnh || null,
+      validade_cnh: body.validade_cnh || null,
+      rntrc: body.rntrc || null,
+      tipo_veiculo: body.tipo_veiculo,
+      placa: body.placa || null,
+      ano_veiculo: body.ano_veiculo || null,
+      tipo_carroceria: body.tipo_carroceria || null,
+      capacidade_kg: body.capacidade_kg || null,
+      aceita_fracionado: body.aceita_fracionado ?? false,
+      aceita_refrigerado: body.aceita_refrigerado ?? false,
+      disponibilidade: body.disponibilidade || 'ativo',
       ativo: true,
     })
     .select('id')
