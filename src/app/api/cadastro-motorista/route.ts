@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-admin'
 
+const GOOGLE_SHEETS_URL =
+  'https://script.google.com/macros/s/AKfycbxeRF5HP2gKPqqSzalRcqToEJzy6IjCqndzh_9ED3PKhpYy3StrEtTl49_GoShfbNT0/exec'
+
+async function enviarParaGoogleSheets(dados: Record<string, unknown>) {
+  try {
+    await fetch(GOOGLE_SHEETS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados),
+    })
+  } catch (err) {
+    console.error('[google-sheets] Falha ao enviar:', err)
+  }
+}
+
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient()
 
@@ -50,6 +65,9 @@ export async function POST(request: NextRequest) {
     console.error('[cadastro-motorista]', error)
     return NextResponse.json({ error: 'Erro ao cadastrar motorista' }, { status: 500 })
   }
+
+  // Envia para Google Sheets em paralelo (não bloqueia a resposta)
+  enviarParaGoogleSheets({ ...body, whatsapp: whatsappFormatado })
 
   return NextResponse.json({ success: true, id: data.id })
 }
