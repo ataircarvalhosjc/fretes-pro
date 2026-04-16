@@ -255,9 +255,14 @@ export default function SolicitarFretePage() {
           </span>
         </h1>
 
-        <p className="text-white/40 text-base sm:text-lg max-w-md mx-auto mb-8 leading-[2]">
-          Conectamos você aos melhores motoristas da região. Solicite agora e receba confirmação pelo WhatsApp.
-        </p>
+        <div className="max-w-md mx-auto mb-8 space-y-4">
+          <p className="text-white/40 text-base sm:text-lg">
+            Conectamos você aos melhores motoristas da região.
+          </p>
+          <p className="text-white/40 text-base sm:text-lg">
+            Solicite agora e receba confirmação pelo WhatsApp.
+          </p>
+        </div>
 
         {/* Stats */}
         <div className="flex items-center justify-center gap-6 sm:gap-10 mb-10">
