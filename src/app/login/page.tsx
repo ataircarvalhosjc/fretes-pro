@@ -40,7 +40,7 @@ export default function LoginPage() {
             <Truck className="w-7 h-7 text-white" strokeWidth={2.5} />
           </div>
           <h1 className="font-display font-bold text-white text-2xl tracking-widest uppercase">
-            Fretes<span className="text-orange-400">Pro</span>
+            Fretes IA<span className="text-orange-400"> Log</span>
           </h1>
           <p className="text-slate-500 text-sm font-body mt-1">Painel de controle</p>
         </div>

@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
 
   const mensagem =
     status === 'concluido'
-      ? `✅ *FRETE CONFIRMADO*\n\n📍 ${origem} → ${destino}\n\nParabéns! O frete foi confirmado. Entre em contato para combinar os detalhes.\n\n_FretesPro_`
-      : `❌ *FRETE CANCELADO*\n\n📍 ${origem} → ${destino}\n\nInfelizmente este frete foi cancelado. Fique atento aos próximos!\n\n_FretesPro_`
+      ? `✅ *FRETE CONFIRMADO*\n\n📍 ${origem} → ${destino}\n\nParabéns! O frete foi confirmado. Entre em contato para combinar os detalhes.\n\n_Fretes IA Log_`
+      : `❌ *FRETE CANCELADO*\n\n📍 ${origem} → ${destino}\n\nInfelizmente este frete foi cancelado. Fique atento aos próximos!\n\n_Fretes IA Log_`
 
   // Enviar WhatsApp para cada motorista notificado
   let enviados = 0

@@ -48,7 +48,7 @@ function getConfig(pathname: string) {
     return { title: 'Editar Motorista', description: 'Atualize os dados do motorista' }
   if (pathname.startsWith('/motoristas/'))
     return { title: 'Perfil do Motorista', description: 'Dados completos do motorista' }
-  return { title: 'FretesPro', description: '' }
+  return { title: 'Fretes IA Log', description: '' }
 }
 
 export function Header() {

@@ -42,10 +42,10 @@ export function Sidebar() {
           </div>
           <div>
             <p className="font-display font-bold text-white text-xl leading-none tracking-widest uppercase">
-              Fretes
+              Fretes IA
             </p>
             <p className="text-orange-400 text-[10px] font-body font-semibold tracking-[0.25em] uppercase mt-0.5">
-              Pro
+              Log
             </p>
           </div>
         </div>

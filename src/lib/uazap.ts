@@ -62,5 +62,5 @@ export function formatarMensagemFrete(orcamento: {
 
 Interessado? Responda esta mensagem!
 
-_Plataforma FretesPro_`
+_Fretes IA Log_`
 }

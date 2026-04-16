@@ -15,7 +15,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'FretesPro',
+  title: 'Fretes IA Log',
   description: 'Plataforma de gestão de fretes e motoristas parceiros',
 }
 

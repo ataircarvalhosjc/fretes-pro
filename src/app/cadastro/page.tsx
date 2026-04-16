@@ -98,7 +98,7 @@ export default function CadastroMotoristaPage() {
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-white mb-3">Cadastro realizado!</h2>
-          <p className="text-orange-400 font-semibold text-lg mb-4">FretesPro</p>
+          <p className="text-orange-400 font-semibold text-lg mb-4">Fretes IA Log</p>
           <p className="text-gray-400 text-sm max-w-xs mx-auto">
             Você será notificado pelo WhatsApp assim que surgir um frete disponível para o seu veículo.
           </p>
@@ -118,7 +118,7 @@ export default function CadastroMotoristaPage() {
         </svg>
       </div>
       <h1 className="text-3xl font-extrabold text-orange-400 tracking-widest uppercase mb-1">Seja um Motorista</h1>
-      <p className="text-gray-500 text-sm mb-10">FretesPro — Receba fretes direto no seu WhatsApp</p>
+      <p className="text-gray-500 text-sm mb-10">Fretes IA Log — Receba fretes direto no seu WhatsApp</p>
 
       <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
 
