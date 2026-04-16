@@ -211,11 +211,6 @@ export default function SolicitarFretePage() {
   return (
     <div className="min-h-screen bg-[#070b14] relative overflow-hidden">
 
-      {/* Background grid */}
-      <div className="fixed inset-0 opacity-[0.04]" style={{
-        backgroundImage: 'linear-gradient(#f97316 1px, transparent 1px), linear-gradient(90deg, #f97316 1px, transparent 1px)',
-        backgroundSize: '50px 50px'
-      }} />
 
       {/* Glow top */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-500/10 blur-[100px] pointer-events-none" />
@@ -243,7 +238,7 @@ export default function SolicitarFretePage() {
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-6xl font-black text-white leading-[1.05] tracking-tight mb-4 max-w-2xl mx-auto">
+        <h1 className="text-4xl sm:text-6xl font-black text-white leading-[1.05] tracking-tight mb-12 max-w-2xl mx-auto">
           Seu frete,{' '}
           <span className="relative">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
