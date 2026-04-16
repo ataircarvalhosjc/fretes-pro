@@ -221,7 +221,7 @@ export default function SolicitarFretePage() {
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-500/10 blur-[100px] pointer-events-none" />
 
       {/* HERO */}
-      <div className="relative pt-12 pb-0 px-4 text-center">
+      <div className="relative pt-24 pb-0 px-4 text-center">
 
         {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 mb-6">
@@ -255,7 +255,7 @@ export default function SolicitarFretePage() {
           </span>
         </h1>
 
-        <p className="text-white/40 text-base sm:text-lg max-w-md mx-auto mb-8 leading-relaxed">
+        <p className="text-white/40 text-base sm:text-lg max-w-md mx-auto mb-8 leading-[2]">
           Conectamos você aos melhores motoristas da região. Solicite agora e receba confirmação pelo WhatsApp.
         </p>
 
