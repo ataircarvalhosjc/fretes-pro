@@ -14,7 +14,8 @@
       "Bash(cp -r motoristas \"\\(admin\\)/motoristas\")",
       "Bash(cp -r orcamentos \"\\(admin\\)/orcamentos\")",
       "Bash(cp -r configuracoes \"\\(admin\\)/configuracoes\")",
-      "Bash(cp page.tsx \"\\(admin\\)/page.tsx\")"
+      "Bash(cp page.tsx \"\\(admin\\)/page.tsx\")",
+      "Bash(node -e ':*)"
     ]
   }
 }

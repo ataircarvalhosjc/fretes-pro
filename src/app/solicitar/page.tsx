@@ -5,6 +5,48 @@ import { TIPOS_VEICULO } from '@/types'
 
 type Step = 1 | 2 | 'success'
 
+function InstallBanner() {
+  const [prompt, setPrompt] = useState<Event | null>(null)
+  const [installed, setInstalled] = useState(false)
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => setInstalled(true))
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(console.error)
+    }
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  if (installed || !prompt) return null
+
+  async function install() {
+    const p = prompt as any
+    p.prompt()
+    const { outcome } = await p.userChoice
+    if (outcome === 'accepted') setInstalled(true)
+    setPrompt(null)
+  }
+
+  return (
+    <div className="fixed bottom-4 left-4 right-4 z-50 bg-[#1a2235] border border-orange-500/30 rounded-2xl p-4 shadow-2xl shadow-orange-500/10 flex items-center gap-3 animate-slide-up">
+      <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
+        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M1 3h15v13H1V3zm15 4h2.5l2.5 3v3h-5V7zM5.5 17a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm11 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-white text-sm font-bold">Instalar Fretes IA Log</p>
+        <p className="text-white/40 text-xs">Adicione à tela inicial do seu celular</p>
+      </div>
+      <button onClick={install} className="bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shrink-0">
+        Instalar
+      </button>
+    </div>
+  )
+}
+
 const inputClass =
   'w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-500 focus:bg-white/8 transition-all duration-200'
 
@@ -210,6 +252,7 @@ export default function SolicitarFretePage() {
 
   return (
     <div className="min-h-screen bg-[#070b14] relative overflow-hidden">
+      <InstallBanner />
 
 
       {/* Glow top */}

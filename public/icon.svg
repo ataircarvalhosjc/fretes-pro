@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#070b14"/>
+  <rect width="512" height="512" rx="100" fill="#f97316" opacity="0.15"/>
+  <!-- Truck body -->
+  <rect x="60" y="180" width="260" height="180" rx="20" fill="#f97316"/>
+  <!-- Truck cab -->
+  <path d="M320 260 L320 180 L380 180 L440 240 L440 360 L320 360 Z" fill="#f97316"/>
+  <!-- Window cab -->
+  <path d="M330 190 L330 245 L430 245 L430 260 L380 190 Z" fill="#070b14" opacity="0.4"/>
+  <!-- Wheels -->
+  <circle cx="150" cy="370" r="45" fill="#1a2235"/>
+  <circle cx="150" cy="370" r="25" fill="#f97316"/>
+  <circle cx="370" cy="370" r="45" fill="#1a2235"/>
+  <circle cx="370" cy="370" r="25" fill="#f97316"/>
+  <!-- Road line -->
+  <rect x="60" y="415" width="390" height="12" rx="6" fill="#f97316" opacity="0.3"/>
+</svg>
