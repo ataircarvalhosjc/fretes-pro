@@ -130,7 +130,18 @@ export default function OrcamentoDetailPage() {
 
   async function updateStatus(newStatus: string) {
     setStatusUpdating(true)
-    await supabase.from('orcamentos').update({ status: newStatus }).eq('id', id)
+
+    // Se concluído ou cancelado, notifica motoristas via WhatsApp
+    if (newStatus === 'concluido' || newStatus === 'cancelado') {
+      await fetch('/api/notificar-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orcamentoId: id, status: newStatus }),
+      })
+    } else {
+      await supabase.from('orcamentos').update({ status: newStatus }).eq('id', id)
+    }
+
     setOrcamento((prev) => prev ? { ...prev, status: newStatus as any } : prev)
     setStatusUpdating(false)
   }

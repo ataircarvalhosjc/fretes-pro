@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
   FileText,
@@ -9,8 +9,10 @@ import {
   Settings,
   Truck,
   ChevronRight,
+  LogOut,
 } from 'lucide-react'
 import { clsx } from 'clsx'
+import { createClient } from '@/lib/supabase'
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -21,6 +23,14 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   return (
     <aside className="w-60 bg-[#0D1424] flex flex-col h-full shrink-0 border-r border-white/5">
@@ -76,11 +86,18 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-white/10">
-        <div className="flex items-center gap-2">
+      <div className="px-3 py-4 border-t border-white/10 space-y-2">
+        <div className="flex items-center gap-2 px-3">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <p className="text-xs text-slate-500 font-body">Sistema ativo • Fase 1</p>
         </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-body font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/5 transition-all"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          Sair
+        </button>
       </div>
     </aside>
   )
