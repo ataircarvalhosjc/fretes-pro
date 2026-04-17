@@ -10,7 +10,7 @@ import { Header } from '@/components/layout/Header'
 import type { Orcamento, StatusOrcamento } from '@/types'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Search, SlidersHorizontal, ChevronRight, Send } from 'lucide-react'
+import { Search, SlidersHorizontal, ChevronRight, Send, Trash2, AlertTriangle } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const STATUS_FILTERS: { label: string; value: StatusOrcamento | 'todos' }[] = [
@@ -28,6 +28,8 @@ export default function OrcamentosPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusOrcamento | 'todos'>('todos')
+  const [deleteTarget, setDeleteTarget] = useState<Orcamento | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchOrcamentos()
@@ -44,6 +46,15 @@ export default function OrcamentosPage() {
     setLoading(false)
   }
 
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    await supabase.from('orcamentos').delete().eq('id', deleteTarget.id)
+    setOrcamentos((prev) => prev.filter((o) => o.id !== deleteTarget.id))
+    setDeleteTarget(null)
+    setDeleting(false)
+  }
+
   const filtered = orcamentos.filter((orc) => {
     const matchSearch =
       !search ||
@@ -57,6 +68,47 @@ export default function OrcamentosPage() {
   return (
     <div className="animate-fade-in">
       <Header />
+
+      {/* Modal de confirmação de exclusão */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-slate-800 text-base">Excluir orçamento?</h3>
+                <p className="text-xs text-slate-400 font-body">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <div className="bg-slate-50 rounded-xl px-4 py-3 mb-5">
+              <p className="text-sm font-body font-semibold text-slate-700">{deleteTarget.cliente_nome}</p>
+              <p className="text-xs text-slate-400 font-body mt-0.5 truncate">{deleteTarget.origem} → {deleteTarget.destino}</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 text-sm font-body font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 text-sm font-body font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="p-8">
         {/* Filters */}
@@ -126,7 +178,7 @@ export default function OrcamentosPage() {
                   <th className="text-left px-6 py-3.5 text-xs font-body font-semibold text-slate-400 uppercase tracking-wide hidden sm:table-cell">
                     Data
                   </th>
-                  <th className="w-10" />
+                  <th className="w-20" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -173,9 +225,18 @@ export default function OrcamentosPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <Link href={`/orcamentos/${orc.id}`}>
-                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-400 transition-colors" />
-                      </Link>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(orc) }}
+                          className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <Link href={`/orcamentos/${orc.id}`}>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-400 transition-colors" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

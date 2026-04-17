@@ -26,6 +26,7 @@ import {
   User,
   MessageSquare,
   Loader2,
+  Trash2,
 } from 'lucide-react'
 
 function InfoItem({
@@ -63,6 +64,8 @@ export default function OrcamentoDetailPage() {
   const [sendResult, setSendResult] = useState<{ success: boolean; enviados: number; total: number } | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [statusUpdating, setStatusUpdating] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -128,6 +131,12 @@ export default function OrcamentoDetailPage() {
     }
   }
 
+  async function handleDelete() {
+    setDeleting(true)
+    await supabase.from('orcamentos').delete().eq('id', id)
+    router.push('/orcamentos')
+  }
+
   async function updateStatus(newStatus: string) {
     setStatusUpdating(true)
 
@@ -176,6 +185,44 @@ export default function OrcamentoDetailPage() {
   return (
     <div className="animate-fade-in">
       <Header />
+
+      {/* Modal de confirmação de exclusão */}
+      {deleteOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-slate-800 text-base">Excluir orçamento?</h3>
+                <p className="text-xs text-slate-400 font-body">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <div className="bg-slate-50 rounded-xl px-4 py-3 mb-5">
+              <p className="text-sm font-body font-semibold text-slate-700">{orcamento.cliente_nome}</p>
+              <p className="text-xs text-slate-400 font-body mt-0.5 truncate">{orcamento.origem} → {orcamento.destino}</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteOpen(false)}
+                className="flex-1 py-2.5 text-sm font-body font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 text-sm font-body font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="p-8 max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <Link
@@ -187,6 +234,13 @@ export default function OrcamentoDetailPage() {
           <div className="flex items-center gap-3">
             <StatusBadge status={orcamento.status} />
             {statusUpdating && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+            <button
+              onClick={() => setDeleteOpen(true)}
+              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+              title="Excluir orçamento"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
           </div>
         </div>
 

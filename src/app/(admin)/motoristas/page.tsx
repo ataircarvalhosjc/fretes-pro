@@ -9,7 +9,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Header } from '@/components/layout/Header'
 import type { Motorista } from '@/types'
 import { TIPOS_VEICULO } from '@/types'
-import { Search, ChevronRight, Users, Truck } from 'lucide-react'
+import { Search, ChevronRight, Users, Truck, Trash2, AlertTriangle } from 'lucide-react'
 import { clsx } from 'clsx'
 
 const DISPONIBILIDADE_FILTERS = [
@@ -26,6 +26,8 @@ export default function MotoristasPage() {
   const [search, setSearch] = useState('')
   const [dispFilter, setDispFilter] = useState('todos')
   const [veiculoFilter, setVeiculoFilter] = useState('todos')
+  const [deleteTarget, setDeleteTarget] = useState<Motorista | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetchMotoristas()
@@ -42,6 +44,15 @@ export default function MotoristasPage() {
     setLoading(false)
   }
 
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    await supabase.from('motoristas').delete().eq('id', deleteTarget.id)
+    setMotoristas((prev) => prev.filter((m) => m.id !== deleteTarget.id))
+    setDeleteTarget(null)
+    setDeleting(false)
+  }
+
   const filtered = motoristas.filter((mot) => {
     const matchSearch =
       !search ||
@@ -56,6 +67,47 @@ export default function MotoristasPage() {
   return (
     <div className="animate-fade-in">
       <Header />
+
+      {/* Modal de confirmação de exclusão */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-slate-800 text-base">Excluir motorista?</h3>
+                <p className="text-xs text-slate-400 font-body">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <div className="bg-slate-50 rounded-xl px-4 py-3 mb-5">
+              <p className="text-sm font-body font-semibold text-slate-700">{deleteTarget.nome}</p>
+              <p className="text-xs text-slate-400 font-body mt-0.5 capitalize">{deleteTarget.tipo_veiculo} {deleteTarget.placa ? `• ${deleteTarget.placa}` : ''}</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 text-sm font-body font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 text-sm font-body font-semibold text-white bg-red-500 hover:bg-red-600 disabled:opacity-60 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="p-8">
         {/* Filters */}
@@ -133,7 +185,7 @@ export default function MotoristasPage() {
                   <th className="text-left px-6 py-3.5 text-xs font-body font-semibold text-slate-400 uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="w-10" />
+                  <th className="w-20" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -189,9 +241,18 @@ export default function MotoristasPage() {
                       <StatusBadge status={mot.disponibilidade} size="sm" />
                     </td>
                     <td className="px-4 py-4">
-                      <Link href={`/motoristas/${mot.id}`}>
-                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-400 transition-colors" />
-                      </Link>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setDeleteTarget(mot) }}
+                          className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <Link href={`/motoristas/${mot.id}`}>
+                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-orange-400 transition-colors" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
