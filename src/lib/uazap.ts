@@ -1,4 +1,4 @@
-const UAZAP_API_URL = 'https://api.uazap.com/v1/messages/send'
+const UAZAP_BASE_URL = 'https://ipazua.uazapi.com'
 
 export async function enviarWhatsApp(phone: string, message: string): Promise<boolean> {
   const token = process.env.UAZAP_TOKEN
@@ -8,16 +8,16 @@ export async function enviarWhatsApp(phone: string, message: string): Promise<bo
     return false
   }
 
-  console.log(`[uazap] Enviando para ${phone} | token: ${token.slice(0, 8)}...`)
+  console.log(`[uazap] Enviando para ${phone}`)
 
   try {
-    const response = await fetch(UAZAP_API_URL, {
+    const response = await fetch(`${UAZAP_BASE_URL}/send/text`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        'token': token,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ phone, message }),
+      body: JSON.stringify({ number: phone, text: message }),
     })
 
     const body = await response.text()

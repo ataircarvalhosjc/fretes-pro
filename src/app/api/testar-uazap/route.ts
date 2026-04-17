@@ -8,15 +8,15 @@ export async function GET() {
   }
 
   try {
-    const response = await fetch('https://api.uazap.com/v1/messages/send', {
+    const response = await fetch('https://ipazua.uazapi.com/send/text', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${token}`,
+        'token': token,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        phone: '5512982273194',
-        message: '✅ Teste Fretes IA Log — uazap funcionando!'
+        number: '5512982273194',
+        text: '✅ Teste Fretes IA Log — uazap funcionando!'
       }),
     })
 
