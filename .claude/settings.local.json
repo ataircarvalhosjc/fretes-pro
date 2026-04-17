@@ -15,7 +15,8 @@
       "Bash(cp -r orcamentos \"\\(admin\\)/orcamentos\")",
       "Bash(cp -r configuracoes \"\\(admin\\)/configuracoes\")",
       "Bash(cp page.tsx \"\\(admin\\)/page.tsx\")",
-      "Bash(node -e ':*)"
+      "Bash(node -e ':*)",
+      "Bash(npx vercel:*)"
     ]
   }
 }

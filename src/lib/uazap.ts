@@ -3,10 +3,12 @@ const UAZAP_API_URL = 'https://api.uazap.com/v1/messages/send'
 export async function enviarWhatsApp(phone: string, message: string): Promise<boolean> {
   const token = process.env.UAZAP_TOKEN
 
-  if (!token) {
-    console.error('[uazap] UAZAP_TOKEN não configurado')
+  if (!token || token === 'placeholder-uazap-token') {
+    console.error('[uazap] UAZAP_TOKEN não configurado ou é placeholder')
     return false
   }
+
+  console.log(`[uazap] Enviando para ${phone} | token: ${token.slice(0, 8)}...`)
 
   try {
     const response = await fetch(UAZAP_API_URL, {
@@ -18,8 +20,10 @@ export async function enviarWhatsApp(phone: string, message: string): Promise<bo
       body: JSON.stringify({ phone, message }),
     })
 
+    const body = await response.text()
+    console.log(`[uazap] Status: ${response.status} | Resposta: ${body}`)
+
     if (!response.ok) {
-      const body = await response.text()
       console.error(`[uazap] Erro ${response.status}:`, body)
       return false
     }
