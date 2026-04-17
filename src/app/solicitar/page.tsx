@@ -429,27 +429,25 @@ export default function SolicitarFretePage() {
 
           {step === 2 && (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Origem *</label>
-                  <input
-                    className={inputClass}
-                    placeholder="Bairro ou cidade"
-                    value={form.origem}
-                    onChange={(e) => set('origem', e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Destino *</label>
-                  <input
-                    className={inputClass}
-                    placeholder="Bairro ou cidade"
-                    value={form.destino}
-                    onChange={(e) => set('destino', e.target.value)}
-                    required
-                  />
-                </div>
+              <div>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de origem *</label>
+                <input
+                  className={inputClass}
+                  placeholder="Rua, número, bairro, cidade — Ex: Rua das Flores, 123, Centro, SP"
+                  value={form.origem}
+                  onChange={(e) => set('origem', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de destino *</label>
+                <input
+                  className={inputClass}
+                  placeholder="Rua, número, bairro, cidade — Ex: Av. Brasil, 456, Jardim América, SP"
+                  value={form.destino}
+                  onChange={(e) => set('destino', e.target.value)}
+                  required
+                />
               </div>
 
               <div>

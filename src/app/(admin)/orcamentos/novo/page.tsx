@@ -137,21 +137,21 @@ export default function NovoOrcamentoPage() {
           </FormSection>
 
           <FormSection title="Detalhes do Frete">
-            <Field label="Origem" required>
+            <Field label="Endereço de origem" required full>
               <input
                 type="text"
                 className={inputClass}
-                placeholder="Cidade / Bairro de origem"
+                placeholder="Rua, número, bairro, cidade — Ex: Rua das Flores, 123, Centro, São Paulo/SP"
                 value={form.origem}
                 onChange={(e) => set('origem', e.target.value)}
                 required
               />
             </Field>
-            <Field label="Destino" required>
+            <Field label="Endereço de destino" required full>
               <input
                 type="text"
                 className={inputClass}
-                placeholder="Cidade / Bairro de destino"
+                placeholder="Rua, número, bairro, cidade — Ex: Av. Brasil, 456, Jardim América, Guarulhos/SP"
                 value={form.destino}
                 onChange={(e) => set('destino', e.target.value)}
                 required
