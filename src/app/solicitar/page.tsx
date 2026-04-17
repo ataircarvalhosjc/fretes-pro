@@ -144,6 +144,7 @@ export default function SolicitarFretePage() {
   const [step, setStep] = useState<Step>(1)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [freteId, setFreteId] = useState('')
   const formRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
@@ -199,6 +200,7 @@ export default function SolicitarFretePage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
+      setFreteId(data.id)
       setStep('success')
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao enviar solicitação')
@@ -208,43 +210,75 @@ export default function SolicitarFretePage() {
   }
 
   if (step === 'success') {
+    const linkRastreio = `${typeof window !== 'undefined' ? window.location.origin : ''}/rastrear/${freteId}`
+
+    function copiarLink() {
+      navigator.clipboard.writeText(linkRastreio)
+    }
+
     return (
       <div className="min-h-screen bg-[#070b14] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Background grid */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(#f97316 1px, transparent 1px), linear-gradient(90deg, #f97316 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
-        }} />
-        <div className="relative text-center max-w-sm mx-auto">
-          <div className="w-24 h-24 rounded-3xl bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto mb-6 animate-bounce">
-            <svg className="w-12 h-12 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Pedido enviado!</h2>
-          <p className="text-white/50 mb-2">Recebemos sua solicitação de frete.</p>
-          <p className="text-orange-400 font-semibold text-sm">Você receberá uma confirmação no WhatsApp em breve.</p>
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-emerald-500/10 blur-[80px] pointer-events-none" />
+        <div className="relative max-w-sm mx-auto w-full">
 
-          <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-5 text-left space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                <span className="text-sm">📍</span>
-              </div>
+          {/* Ícone sucesso */}
+          <div className="text-center mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-3xl font-black text-white tracking-tight">Pedido enviado!</h2>
+            <p className="text-white/40 text-sm mt-1">Entraremos em contato em breve.</p>
+          </div>
+
+          {/* Resumo */}
+          <div className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-5 mb-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-white/5">
+              <span className="text-xl">📍</span>
               <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-wider">De → Para</p>
-                <p className="text-white text-sm font-semibold">{form.origem} → {form.destino}</p>
+                <p className="text-white/30 text-[10px] uppercase tracking-wider">Rota</p>
+                <p className="text-white text-sm font-bold">{form.origem} → {form.destino}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                <span className="text-sm">📲</span>
+            {form.descricao && (
+              <div className="flex items-center gap-3 pt-3">
+                <span className="text-xl">📦</span>
+                <div>
+                  <p className="text-white/30 text-[10px] uppercase tracking-wider">Carga</p>
+                  <p className="text-white text-sm font-bold">{form.descricao}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-wider">WhatsApp</p>
-                <p className="text-white text-sm font-semibold">{form.cliente_whatsapp}</p>
-              </div>
+            )}
+          </div>
+
+          {/* Link de rastreamento */}
+          <div className="bg-orange-500/10 border border-orange-500/30 rounded-3xl p-5 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">🔍</span>
+              <p className="text-orange-400 font-black text-sm uppercase tracking-wider">Rastreie seu frete</p>
+            </div>
+            <p className="text-white/40 text-xs mb-3">Salve este link para acompanhar o status em tempo real:</p>
+            <div className="bg-black/30 rounded-xl px-3 py-2.5 flex items-center gap-2 mb-3">
+              <p className="text-white/60 text-xs flex-1 truncate font-mono">{linkRastreio}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={copiarLink}
+                className="bg-white/10 hover:bg-white/15 text-white text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+              >
+                📋 Copiar link
+              </button>
+              <a
+                href={linkRastreio}
+                className="bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+              >
+                🚛 Rastrear agora
+              </a>
             </div>
           </div>
+
+          <p className="text-center text-white/20 text-xs">Fretes IA Log • Seu frete, na hora certa</p>
         </div>
       </div>
     )

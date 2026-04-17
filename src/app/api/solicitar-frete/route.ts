@@ -46,8 +46,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Erro ao registrar solicitação' }, { status: 500 })
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://fretes-pro-cv53.vercel.app'
+  const linkRastreio = `${baseUrl}/rastrear/${data.id}`
+
   // Notificação para o admin
-  const msgAdmin = `🔔 *NOVO PEDIDO DE FRETE*\n\n👤 *Cliente:* ${body.cliente_nome}\n📲 *WhatsApp:* ${whatsapp}\n📍 *De:* ${body.origem}\n📍 *Para:* ${body.destino}${body.descricao ? `\n📦 *Carga:* ${body.descricao}` : ''}${body.peso_kg ? `\n⚖️ *Peso:* ${body.peso_kg} kg` : ''}${body.data_frete ? `\n📅 *Data:* ${body.data_frete}` : ''}${body.observacoes ? `\n📝 *Obs:* ${body.observacoes}` : ''}\n\n⚡ Acesse o painel para aprovar!\n\n_Fretes IA Log_`
+  const msgAdmin = `🔔 *NOVO PEDIDO DE FRETE*\n\n👤 *Cliente:* ${body.cliente_nome}\n📲 *WhatsApp:* ${whatsapp}\n📍 *De:* ${body.origem}\n📍 *Para:* ${body.destino}${body.descricao ? `\n📦 *Carga:* ${body.descricao}` : ''}${body.peso_kg ? `\n⚖️ *Peso:* ${body.peso_kg} kg` : ''}${body.data_frete ? `\n📅 *Data:* ${body.data_frete}` : ''}${body.observacoes ? `\n📝 *Obs:* ${body.observacoes}` : ''}\n\n🔍 *Rastreamento:*\n${linkRastreio}\n\n⚡ Acesse o painel para aprovar!\n\n_Fretes IA Log_`
 
   enviarWhatsApp('5512982273194', msgAdmin).catch(console.error)
 
