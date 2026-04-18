@@ -59,7 +59,9 @@ export default function CadastroMotoristaPage() {
         body: JSON.stringify({
           nome: form.nome,
           cpf: form.cpf || null,
-          data_nascimento: form.data_nascimento || null,
+          data_nascimento: form.data_nascimento
+            ? form.data_nascimento.split('/').reverse().join('-')
+            : null,
           whatsapp: form.whatsapp.replace(/\D/g, ''),
           email: form.email || null,
           cidade: form.cidade || null,
@@ -207,7 +209,20 @@ export default function CadastroMotoristaPage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Data de nascimento</label>
-              <input type="date" className={input} value={form.data_nascimento} onChange={(e) => set('data_nascimento', e.target.value)} />
+              <input
+                type="text"
+                className={input}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
+                value={form.data_nascimento}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                  else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                  set('data_nascimento', v)
+                }}
+              />
             </div>
             <div>
               <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">WhatsApp <span className="text-orange-500">*</span></label>
