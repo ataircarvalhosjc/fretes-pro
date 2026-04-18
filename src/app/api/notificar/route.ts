@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { enviarWhatsApp, formatarMensagemFrete } from '@/lib/uazap'
+import { enviarPushMotorista } from '@/lib/firebase-admin'
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient()
@@ -78,6 +79,19 @@ export async function POST(request: NextRequest) {
       status: success ? 'enviado' : 'falha',
     })
     if (success) enviados++
+
+    // Enviar push FCM se motorista tiver token (com botões Aceitar/Recusar)
+    if (motorista.fcm_token) {
+      enviarPushMotorista(
+        motorista.fcm_token,
+        orcamentoId,
+        motorista.id,
+        orcamento.origem,
+        orcamento.destino,
+        orcamento.descricao || '',
+        orcamento.tipo_veiculo_necessario || ''
+      ).catch(console.error)
+    }
   }
 
   // 5. Registrar notificações no banco

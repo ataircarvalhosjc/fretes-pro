@@ -2,11 +2,14 @@
 
 import { useState } from 'react'
 import { TIPOS_VEICULO, CATEGORIAS_CNH, TIPOS_CARROCERIA, ESTADOS_BR } from '@/types'
+import { pedirPermissaoNotificacao } from '@/lib/firebase'
 
 export default function CadastroMotoristaPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [motoristaId, setMotoristaId] = useState('')
+  const [notifStatus, setNotifStatus] = useState<'idle' | 'pedindo' | 'ok' | 'negado'>('idle')
 
   const [form, setForm] = useState({
     nome: '',
@@ -77,6 +80,7 @@ export default function CadastroMotoristaPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar')
+      setMotoristaId(data.id)
       setSuccess(true)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erro ao enviar cadastro')
@@ -88,20 +92,80 @@ export default function CadastroMotoristaPage() {
   const input = 'w-full bg-[#2a2a2a] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 transition'
   const select = 'w-full bg-[#2a2a2a] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-orange-500 transition appearance-none'
 
+  async function ativarNotificacoes() {
+    setNotifStatus('pedindo')
+    const token = await pedirPermissaoNotificacao()
+    if (token && motoristaId) {
+      await fetch('/api/salvar-fcm-motorista', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motoristaId, fcmToken: token }),
+      })
+      setNotifStatus('ok')
+    } else {
+      setNotifStatus('negado')
+    }
+  }
+
   if (success) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-        <div className="text-center">
+        <div className="w-full max-w-sm text-center">
           <div className="w-20 h-20 rounded-full bg-orange-500/20 border-2 border-orange-500 flex items-center justify-center mx-auto mb-6">
             <svg className="w-10 h-10 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-white mb-3">Cadastro realizado!</h2>
-          <p className="text-orange-400 font-semibold text-lg mb-4">Fretes IA Log</p>
-          <p className="text-gray-400 text-sm max-w-xs mx-auto">
-            Você será notificado pelo WhatsApp assim que surgir um frete disponível para o seu veículo.
+          <p className="text-orange-400 font-semibold text-lg mb-2">Fretes IA Log</p>
+          <p className="text-gray-400 text-sm mb-8">
+            Você será avisado pelo WhatsApp quando surgir um frete para o seu veículo.
           </p>
+
+          {/* Opt-in push notification */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-left">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-3xl">🔔</span>
+              <div>
+                <p className="text-white font-bold text-sm">Ative as notificações!</p>
+                <p className="text-gray-500 text-xs">Receba fretes em tempo real com 1 toque para aceitar ou recusar</p>
+              </div>
+            </div>
+
+            {notifStatus === 'idle' && (
+              <button
+                onClick={ativarNotificacoes}
+                className="w-full bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 rounded-xl text-sm transition-all"
+              >
+                Ativar notificações de frete
+              </button>
+            )}
+
+            {notifStatus === 'pedindo' && (
+              <div className="flex items-center justify-center gap-2 py-3">
+                <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-gray-400 text-sm">Aguardando permissão...</span>
+              </div>
+            )}
+
+            {notifStatus === 'ok' && (
+              <div className="flex items-center gap-2 text-emerald-400 py-2">
+                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p className="font-bold text-sm">Notificações ativadas!</p>
+                  <p className="text-emerald-600 text-xs">Você receberá alertas de novos fretes neste dispositivo</p>
+                </div>
+              </div>
+            )}
+
+            {notifStatus === 'negado' && (
+              <p className="text-gray-600 text-xs text-center py-2">
+                Permissão negada. Acompanhe os fretes pelo WhatsApp.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     )

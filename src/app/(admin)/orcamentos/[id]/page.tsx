@@ -312,27 +312,45 @@ export default function OrcamentoDetailPage() {
                   Motoristas Notificados ({notificacoes.length})
                 </h2>
                 <div className="space-y-2">
-                  {notificacoes.map((notif) => (
-                    <div
-                      key={notif.id}
-                      className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-body font-medium text-slate-700">
-                          {(notif as any).motoristas?.nome ?? 'Motorista'}
+                  {notificacoes.map((notif) => {
+                    const resposta = (notif as any).resposta as string | null
+                    return (
+                      <div
+                        key={notif.id}
+                        className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0"
+                      >
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                          resposta === 'aceitar' ? 'bg-emerald-50' :
+                          resposta === 'recusar' ? 'bg-red-50' : 'bg-slate-50'
+                        }`}>
+                          {resposta === 'aceitar' ? (
+                            <CheckCircle className="w-4 h-4 text-emerald-500" />
+                          ) : resposta === 'recusar' ? (
+                            <AlertCircle className="w-4 h-4 text-red-400" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4 text-slate-300" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-body font-medium text-slate-700">
+                            {(notif as any).motoristas?.nome ?? 'Motorista'}
+                          </p>
+                          <p className="text-xs font-body capitalize">
+                            {resposta === 'aceitar' ? (
+                              <span className="text-emerald-600 font-semibold">✅ Aceitou o frete</span>
+                            ) : resposta === 'recusar' ? (
+                              <span className="text-red-400 font-semibold">❌ Recusou o frete</span>
+                            ) : (
+                              <span className="text-slate-400">Aguardando resposta...</span>
+                            )}
+                          </p>
+                        </div>
+                        <p className="text-xs text-slate-400 font-body font-tabular shrink-0">
+                          {format(new Date(notif.created_at), 'dd/MM HH:mm')}
                         </p>
-                        <p className="text-xs text-slate-400 font-body capitalize">
-                          {(notif as any).motoristas?.tipo_veiculo ?? ''}
-                        </p>
                       </div>
-                      <p className="text-xs text-slate-400 font-body font-tabular shrink-0">
-                        {format(new Date(notif.created_at), 'dd/MM HH:mm')}
-                      </p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}

@@ -10,6 +10,7 @@ if (!getApps().length) {
   }
 }
 
+// Push para o CLIENTE (status do frete)
 export async function enviarPushNotification(
   token: string,
   titulo: string,
@@ -20,10 +21,7 @@ export async function enviarPushNotification(
     const messaging = getMessaging()
     await messaging.send({
       token,
-      notification: {
-        title: titulo,
-        body: corpo,
-      },
+      notification: { title: titulo, body: corpo },
       webpush: {
         notification: {
           title: titulo,
@@ -38,7 +36,42 @@ export async function enviarPushNotification(
     })
     return true
   } catch (err) {
-    console.error('Erro ao enviar push FCM:', err)
+    console.error('Erro ao enviar push cliente:', err)
+    return false
+  }
+}
+
+// Push para o MOTORISTA (novo frete — com botões Aceitar/Recusar)
+export async function enviarPushMotorista(
+  token: string,
+  orcamentoId: string,
+  motoristaId: string,
+  origem: string,
+  destino: string,
+  descricao: string,
+  tipoVeiculo: string
+): Promise<boolean> {
+  try {
+    const messaging = getMessaging()
+    await messaging.send({
+      token,
+      // Data-only: o service worker monta a notificação com botões
+      data: {
+        type: 'novo_frete',
+        orcamentoId,
+        motoristaId,
+        origem,
+        destino,
+        descricao: descricao || '',
+        tipoVeiculo: tipoVeiculo || '',
+      },
+      webpush: {
+        headers: { Urgency: 'high' },
+      },
+    })
+    return true
+  } catch (err) {
+    console.error('Erro ao enviar push motorista:', err)
     return false
   }
 }
