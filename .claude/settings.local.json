@@ -25,7 +25,9 @@
       "Bash(curl -s \"https://ipazua.uazapi.com/\" -H \"token: 0aaead12-44d1-44c4-be31-5a403b897716\")",
       "Bash(curl -s \"https://ipazua.uazapi.com/send\" -X POST -H \"token: 0aaead12-44d1-44c4-be31-5a403b897716\" -H \"Content-Type: application/json\" -d \"{\\\\\"number\\\\\":\\\\\"5512982273194\\\\\",\\\\\"message\\\\\":\\\\\"teste\\\\\"}\")",
       "Bash(curl -s -X POST \"https://ipazua.uazapi.com/send/text\" -H \"token: 0aaead12-44d1-44c4-be31-5a403b897716\" -H \"Content-Type: application/json\" -d \"{\\\\\"number\\\\\":\\\\\"5512982273194\\\\\",\\\\\"text\\\\\":\\\\\"teste\\\\\"}\")",
-      "Bash(curl -s -X POST \"https://ipazua.uazapi.com/messages/send\" -H \"token: 0aaead12-44d1-44c4-be31-5a403b897716\" -H \"Content-Type: application/json\" -d \"{\\\\\"number\\\\\":\\\\\"5512982273194\\\\\",\\\\\"text\\\\\":\\\\\"teste\\\\\"}\")"
+      "Bash(curl -s -X POST \"https://ipazua.uazapi.com/messages/send\" -H \"token: 0aaead12-44d1-44c4-be31-5a403b897716\" -H \"Content-Type: application/json\" -d \"{\\\\\"number\\\\\":\\\\\"5512982273194\\\\\",\\\\\"text\\\\\":\\\\\"teste\\\\\"}\")",
+      "Bash(npx tsc:*)",
+      "Bash(firebase --version)"
     ]
   }
 }

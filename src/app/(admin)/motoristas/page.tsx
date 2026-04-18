@@ -47,6 +47,8 @@ export default function MotoristasPage() {
   async function handleDelete() {
     if (!deleteTarget) return
     setDeleting(true)
+    // Remove notificações vinculadas primeiro (evita erro de foreign key)
+    await supabase.from('notificacoes').delete().eq('motorista_id', deleteTarget.id)
     await supabase.from('motoristas').delete().eq('id', deleteTarget.id)
     setMotoristas((prev) => prev.filter((m) => m.id !== deleteTarget.id))
     setDeleteTarget(null)

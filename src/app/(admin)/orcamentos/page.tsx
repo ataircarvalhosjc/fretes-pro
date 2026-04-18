@@ -49,6 +49,8 @@ export default function OrcamentosPage() {
   async function handleDelete() {
     if (!deleteTarget) return
     setDeleting(true)
+    // Remove notificações vinculadas primeiro (evita erro de foreign key)
+    await supabase.from('notificacoes').delete().eq('orcamento_id', deleteTarget.id)
     await supabase.from('orcamentos').delete().eq('id', deleteTarget.id)
     setOrcamentos((prev) => prev.filter((o) => o.id !== deleteTarget.id))
     setDeleteTarget(null)

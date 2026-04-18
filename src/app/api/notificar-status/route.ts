@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase-admin'
 import { enviarWhatsApp } from '@/lib/uazap'
+import { enviarPushNotification } from '@/lib/firebase-admin'
 
 export async function POST(request: NextRequest) {
   const supabase = createAdminClient()
@@ -67,6 +68,22 @@ export async function POST(request: NextRequest) {
 
   // Atualizar status do orçamento
   await supabase.from('orcamentos').update({ status }).eq('id', orcamentoId)
+
+  // Enviar push notification para o cliente (se tiver token FCM)
+  if (orcamento.fcm_token) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://fretes-pro-cv53.vercel.app'
+    const tituloPush = status === 'concluido' ? '✅ Frete confirmado!' : '❌ Frete cancelado'
+    const corpoPush =
+      status === 'concluido'
+        ? `Seu frete ${origem} → ${destino} foi confirmado!`
+        : `Seu frete ${origem} → ${destino} foi cancelado.`
+    enviarPushNotification(
+      orcamento.fcm_token,
+      tituloPush,
+      corpoPush,
+      `${baseUrl}/rastrear/${orcamentoId}`
+    ).catch(console.error)
+  }
 
   return NextResponse.json({ success: true, enviados, total: notificacoes.length })
 }

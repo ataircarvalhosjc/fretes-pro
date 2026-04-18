@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { TIPOS_VEICULO } from '@/types'
+import { pedirPermissaoNotificacao, ouvirNotificacoesEmPrimeiroPLano } from '@/lib/firebase'
 
 type Step = 1 | 2 | 'success'
 
@@ -145,6 +146,7 @@ export default function SolicitarFretePage() {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const [freteId, setFreteId] = useState('')
+  const [notifStatus, setNotifStatus] = useState<'idle' | 'pedindo' | 'ok' | 'negado'>('idle')
   const formRef = useRef<HTMLDivElement>(null)
 
   const [form, setForm] = useState({
@@ -202,10 +204,27 @@ export default function SolicitarFretePage() {
       if (!res.ok) throw new Error(data.error)
       setFreteId(data.id)
       setStep('success')
+      // Ativa listener de notificações em primeiro plano
+      ouvirNotificacoesEmPrimeiroPLano()
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao enviar solicitação')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function ativarNotificacoes() {
+    setNotifStatus('pedindo')
+    const token = await pedirPermissaoNotificacao()
+    if (token && freteId) {
+      await fetch('/api/salvar-fcm-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orcamentoId: freteId, fcmToken: token }),
+      })
+      setNotifStatus('ok')
+    } else {
+      setNotifStatus('negado')
     }
   }
 
@@ -277,6 +296,48 @@ export default function SolicitarFretePage() {
               </a>
             </div>
           </div>
+
+          {/* Card de notificação push */}
+          {notifStatus === 'idle' && (
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-5 mb-4">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">🔔</span>
+                <div>
+                  <p className="text-white font-bold text-sm">Quer ser notificado?</p>
+                  <p className="text-white/40 text-xs">Receba alertas quando seu frete for atualizado</p>
+                </div>
+              </div>
+              <button
+                onClick={ativarNotificacoes}
+                className="w-full bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold py-3 rounded-2xl transition-all"
+              >
+                Ativar notificações
+              </button>
+            </div>
+          )}
+
+          {notifStatus === 'pedindo' && (
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-5 mb-4 flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin shrink-0" />
+              <p className="text-white/60 text-sm">Ativando notificações...</p>
+            </div>
+          )}
+
+          {notifStatus === 'ok' && (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-3xl p-5 mb-4 flex items-center gap-3">
+              <span className="text-xl">✅</span>
+              <div>
+                <p className="text-emerald-400 font-bold text-sm">Notificações ativadas!</p>
+                <p className="text-white/40 text-xs">Você receberá alertas sobre seu frete</p>
+              </div>
+            </div>
+          )}
+
+          {notifStatus === 'negado' && (
+            <div className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-5 mb-4">
+              <p className="text-white/40 text-xs text-center">Notificações bloqueadas. Acompanhe pelo link de rastreamento.</p>
+            </div>
+          )}
 
           <p className="text-center text-white/20 text-xs">Fretes IA Log • Seu frete, na hora certa</p>
         </div>
