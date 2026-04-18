@@ -198,6 +198,7 @@ export default function SolicitarFretePage() {
           ...form,
           cliente_whatsapp: form.cliente_whatsapp.replace(/\D/g, ''),
           peso_kg: form.peso_kg ? parseInt(form.peso_kg) : null,
+          data_frete: form.data_frete ? form.data_frete.split('/').reverse().join('-') : null,
         }),
       })
       const data = await res.json()
@@ -555,11 +556,18 @@ export default function SolicitarFretePage() {
               <div>
                 <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Data do frete</label>
                 <input
-                  type="date"
+                  type="text"
                   className={inputClass}
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
+                  inputMode="numeric"
                   value={form.data_frete}
-                  onChange={(e) => set('data_frete', e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                    if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                    else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                    set('data_frete', v)
+                  }}
                 />
               </div>
 

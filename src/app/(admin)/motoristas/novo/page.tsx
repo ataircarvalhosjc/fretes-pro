@@ -104,14 +104,14 @@ export default function NovoMotoristaPage() {
     const payload = {
       nome: form.nome,
       cpf: form.cpf || null,
-      data_nascimento: form.data_nascimento || null,
+      data_nascimento: form.data_nascimento ? form.data_nascimento.split('/').reverse().join('-') : null,
       whatsapp: form.whatsapp.replace(/\D/g, ''),
       email: form.email || null,
       cidade: form.cidade || null,
       estado: form.estado || null,
       numero_cnh: form.numero_cnh || null,
       categoria_cnh: form.categoria_cnh || null,
-      validade_cnh: form.validade_cnh || null,
+      validade_cnh: form.validade_cnh ? form.validade_cnh.split('/').reverse().join('-') : null,
       rntrc: form.rntrc || null,
       tipo_veiculo: form.tipo_veiculo,
       placa: form.placa ? form.placa.toUpperCase() : null,
@@ -170,10 +170,18 @@ export default function NovoMotoristaPage() {
             </Field>
             <Field label="Data de nascimento">
               <input
-                type="date"
+                type="text"
                 className={inputClass}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
                 value={form.data_nascimento}
-                onChange={(e) => set('data_nascimento', e.target.value)}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                  else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                  set('data_nascimento', v)
+                }}
               />
             </Field>
             <Field label="WhatsApp" required hint="Formato: 5511999999999">
@@ -248,10 +256,18 @@ export default function NovoMotoristaPage() {
             </Field>
             <Field label="Validade da CNH">
               <input
-                type="date"
+                type="text"
                 className={inputClass}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
                 value={form.validade_cnh}
-                onChange={(e) => set('validade_cnh', e.target.value)}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                  else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                  set('validade_cnh', v)
+                }}
               />
             </Field>
             <Field label="RNTRC / ANTT" hint="Obrigatório por lei para frete remunerado">

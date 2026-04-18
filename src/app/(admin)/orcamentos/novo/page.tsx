@@ -84,7 +84,7 @@ export default function NovoOrcamentoPage() {
       tipo_veiculo_necessario: form.tipo_veiculo_necessario || null,
       peso_kg: form.peso_kg ? parseInt(form.peso_kg) : null,
       valor_estimado: form.valor_estimado ? parseFloat(form.valor_estimado.replace(',', '.')) : null,
-      data_frete: form.data_frete || null,
+      data_frete: form.data_frete ? form.data_frete.split('/').reverse().join('-') : null,
       observacoes: form.observacoes || null,
       status: 'pendente',
       motoristas_notificados: 0,
@@ -204,10 +204,18 @@ export default function NovoOrcamentoPage() {
             </Field>
             <Field label="Data do frete">
               <input
-                type="date"
+                type="text"
                 className={inputClass}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
                 value={form.data_frete}
-                onChange={(e) => set('data_frete', e.target.value)}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                  else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                  set('data_frete', v)
+                }}
               />
             </Field>
             <Field label="Observações internas" full>

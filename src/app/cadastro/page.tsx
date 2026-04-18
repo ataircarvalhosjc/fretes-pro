@@ -68,7 +68,7 @@ export default function CadastroMotoristaPage() {
           estado: form.estado || null,
           numero_cnh: form.numero_cnh || null,
           categoria_cnh: form.categoria_cnh || null,
-          validade_cnh: form.validade_cnh || null,
+          validade_cnh: form.validade_cnh ? form.validade_cnh.split('/').reverse().join('-') : null,
           rntrc: form.rntrc || null,
           tipo_veiculo: form.tipo_veiculo,
           placa: form.placa ? form.placa.toUpperCase() : null,
@@ -272,7 +272,20 @@ export default function CadastroMotoristaPage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Validade da CNH</label>
-              <input type="date" className={input} value={form.validade_cnh} onChange={(e) => set('validade_cnh', e.target.value)} />
+              <input
+                type="text"
+                className={input}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                inputMode="numeric"
+                value={form.validade_cnh}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                  else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                  set('validade_cnh', v)
+                }}
+              />
             </div>
             <div>
               <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">RNTRC / ANTT</label>
