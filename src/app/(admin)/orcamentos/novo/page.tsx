@@ -68,8 +68,10 @@ export default function NovoOrcamentoPage() {
     cliente_nome: '',
     cliente_whatsapp: '',
     endereco_origem: '',
+    cep_origem: '',
     cidade_origem: '',
     endereco_destino: '',
+    cep_destino: '',
     cidade_destino: '',
     descricao: '',
     tipo_veiculo_necessario: '',
@@ -94,8 +96,8 @@ export default function NovoOrcamentoPage() {
 
     setSaving(true)
 
-    const origem = [form.endereco_origem, form.cidade_origem].filter(Boolean).join(', ')
-    const destino = [form.endereco_destino, form.cidade_destino].filter(Boolean).join(', ')
+    const origem = [form.endereco_origem, form.cep_origem ? `CEP ${form.cep_origem}` : '', form.cidade_origem].filter(Boolean).join(', ')
+    const destino = [form.endereco_destino, form.cep_destino ? `CEP ${form.cep_destino}` : '', form.cidade_destino].filter(Boolean).join(', ')
 
     const payload = {
       cliente_nome: form.cliente_nome,
@@ -169,6 +171,21 @@ export default function NovoOrcamentoPage() {
                 required
               />
             </Field>
+            <Field label="CEP origem">
+              <input
+                type="text"
+                className={inputClass}
+                placeholder="00000-000"
+                maxLength={9}
+                inputMode="numeric"
+                value={form.cep_origem}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
+                  set('cep_origem', v)
+                }}
+              />
+            </Field>
             <Field label="Cidade de origem" required>
               <input
                 type="text"
@@ -187,6 +204,21 @@ export default function NovoOrcamentoPage() {
                 value={form.endereco_destino}
                 onChange={(e) => set('endereco_destino', e.target.value)}
                 required
+              />
+            </Field>
+            <Field label="CEP destino">
+              <input
+                type="text"
+                className={inputClass}
+                placeholder="00000-000"
+                maxLength={9}
+                inputMode="numeric"
+                value={form.cep_destino}
+                onChange={(e) => {
+                  let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                  if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
+                  set('cep_destino', v)
+                }}
               />
             </Field>
             <Field label="Cidade de destino" required>

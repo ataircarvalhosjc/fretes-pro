@@ -153,12 +153,15 @@ export default function SolicitarFretePage() {
     cliente_nome: '',
     cliente_whatsapp: '',
     endereco_origem: '',
+    cep_origem: '',
     cidade_origem: '',
     endereco_destino: '',
+    cep_destino: '',
     cidade_destino: '',
     descricao: '',
     tipo_veiculo_necessario: '',
     peso_kg: '',
+    valor_estimado: '',
     data_frete: '',
     observacoes: '',
   })
@@ -204,11 +207,12 @@ export default function SolicitarFretePage() {
         body: JSON.stringify({
           cliente_nome: form.cliente_nome,
           cliente_whatsapp: form.cliente_whatsapp.replace(/\D/g, ''),
-          origem: [form.endereco_origem, form.cidade_origem].filter(Boolean).join(', '),
-          destino: [form.endereco_destino, form.cidade_destino].filter(Boolean).join(', '),
+          origem: [form.endereco_origem, form.cep_origem ? `CEP ${form.cep_origem}` : '', form.cidade_origem].filter(Boolean).join(', '),
+          destino: [form.endereco_destino, form.cep_destino ? `CEP ${form.cep_destino}` : '', form.cidade_destino].filter(Boolean).join(', '),
           descricao: form.descricao || null,
           tipo_veiculo_necessario: form.tipo_veiculo_necessario || null,
           peso_kg: form.peso_kg ? parseInt(form.peso_kg) : null,
+          valor_estimado: form.valor_estimado ? parseFloat(form.valor_estimado.replace(',', '.')) : null,
           data_frete: dataConvertida,
           observacoes: form.observacoes || null,
         }),
@@ -513,15 +517,32 @@ export default function SolicitarFretePage() {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade de origem *</label>
-                <input
-                  className={inputClass}
-                  placeholder="Ex: São Paulo / SP"
-                  value={form.cidade_origem}
-                  onChange={(e) => set('cidade_origem', e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">CEP origem</label>
+                  <input
+                    className={inputClass}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    inputMode="numeric"
+                    value={form.cep_origem}
+                    onChange={(e) => {
+                      let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                      if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
+                      set('cep_origem', v)
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade origem *</label>
+                  <input
+                    className={inputClass}
+                    placeholder="São Paulo / SP"
+                    value={form.cidade_origem}
+                    onChange={(e) => set('cidade_origem', e.target.value)}
+                    required
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de destino *</label>
@@ -533,15 +554,32 @@ export default function SolicitarFretePage() {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade de destino *</label>
-                <input
-                  className={inputClass}
-                  placeholder="Ex: Guarulhos / SP"
-                  value={form.cidade_destino}
-                  onChange={(e) => set('cidade_destino', e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">CEP destino</label>
+                  <input
+                    className={inputClass}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    inputMode="numeric"
+                    value={form.cep_destino}
+                    onChange={(e) => {
+                      let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                      if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
+                      set('cep_destino', v)
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade destino *</label>
+                  <input
+                    className={inputClass}
+                    placeholder="Guarulhos / SP"
+                    value={form.cidade_destino}
+                    onChange={(e) => set('cidade_destino', e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
               <div>
@@ -585,8 +623,20 @@ export default function SolicitarFretePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Data do frete</label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Valor estimado (R$)</label>
+                  <input
+                    type="text"
+                    className={inputClass}
+                    placeholder="Ex: 350,00"
+                    inputMode="decimal"
+                    value={form.valor_estimado}
+                    onChange={(e) => set('valor_estimado', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Data do frete</label>
                 <input
                   type="text"
                   className={inputClass}
@@ -601,6 +651,7 @@ export default function SolicitarFretePage() {
                     set('data_frete', v)
                   }}
                 />
+                </div>
               </div>
 
               <div>
