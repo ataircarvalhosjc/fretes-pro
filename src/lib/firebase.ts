@@ -10,7 +10,7 @@ const firebaseConfig = {
   appId: '1:48121888946:web:c4e4fbbda43c61c616c9ab',
 }
 
-const VAPID_KEY = '7rcW9yu5sUW-3V5T7JdYw2Kqb5D5IYf2qkyrkztp_2Y'
+const VAPID_KEY = 'BLQlkWE3dPzCPk-ZXB1KSNsuzfhNLrwin5mAUzrTXhAIzVA182FQt6tmfVjVTxXw1IL70cqdzw95MXhN8xfc9_w'
 
 export const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
