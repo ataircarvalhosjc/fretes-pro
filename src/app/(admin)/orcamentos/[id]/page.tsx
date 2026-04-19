@@ -66,6 +66,9 @@ export default function OrcamentoDetailPage() {
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [editandoValor, setEditandoValor] = useState(false)
+  const [novoValor, setNovoValor] = useState('')
+  const [salvandoValor, setSalvandoValor] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -137,6 +140,15 @@ export default function OrcamentoDetailPage() {
     await supabase.from('notificacoes').delete().eq('orcamento_id', id)
     await supabase.from('orcamentos').delete().eq('id', id)
     router.push('/orcamentos')
+  }
+
+  async function salvarValor() {
+    setSalvandoValor(true)
+    const valor = parseFloat(novoValor.replace(',', '.'))
+    await supabase.from('orcamentos').update({ valor_estimado: isNaN(valor) ? null : valor }).eq('id', id)
+    setOrcamento((prev) => prev ? { ...prev, valor_estimado: isNaN(valor) ? undefined : valor } : prev)
+    setEditandoValor(false)
+    setSalvandoValor(false)
   }
 
   async function updateStatus(newStatus: string) {
@@ -274,15 +286,43 @@ export default function OrcamentoDetailPage() {
                   label="Peso estimado"
                   value={orcamento.peso_kg ? `${orcamento.peso_kg.toLocaleString('pt-BR')} kg` : null}
                 />
-                <InfoItem
-                  icon={DollarSign}
-                  label="Valor estimado"
-                  value={
-                    orcamento.valor_estimado
-                      ? `R$ ${orcamento.valor_estimado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-                      : null
-                  }
-                />
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <DollarSign className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-400 font-body font-semibold uppercase tracking-wide">Valor do frete</p>
+                    {editandoValor ? (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-slate-500 font-body">R$</span>
+                        <input
+                          type="text"
+                          autoFocus
+                          className="w-32 px-2 py-1 text-sm font-body border border-orange-300 rounded-lg focus:outline-none focus:border-orange-500"
+                          placeholder="0,00"
+                          value={novoValor}
+                          onChange={(e) => setNovoValor(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') salvarValor(); if (e.key === 'Escape') setEditandoValor(false) }}
+                        />
+                        <button onClick={salvarValor} disabled={salvandoValor} className="text-xs font-semibold text-white bg-orange-500 hover:bg-orange-600 px-3 py-1 rounded-lg transition-colors">
+                          {salvandoValor ? '...' : 'Salvar'}
+                        </button>
+                        <button onClick={() => setEditandoValor(false)} className="text-xs text-slate-400 hover:text-slate-600">Cancelar</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setNovoValor(orcamento.valor_estimado ? String(orcamento.valor_estimado) : ''); setEditandoValor(true) }}
+                        className="text-sm font-body font-medium text-slate-800 mt-0.5 hover:text-orange-500 transition-colors group flex items-center gap-1"
+                      >
+                        {orcamento.valor_estimado
+                          ? `R$ ${orcamento.valor_estimado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                          : <span className="text-slate-300 italic">Clique para definir o valor</span>
+                        }
+                        <span className="text-[10px] text-orange-400 opacity-0 group-hover:opacity-100 transition-opacity">✏️</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <InfoItem
                   icon={Calendar}
                   label="Data do frete"
