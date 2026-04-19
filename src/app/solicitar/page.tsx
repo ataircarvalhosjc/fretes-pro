@@ -187,8 +187,8 @@ export default function SolicitarFretePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.origem || !form.destino) {
-      setErro('Preencha origem e destino.')
+    if (!form.endereco_origem || !form.cidade_origem || !form.endereco_destino || !form.cidade_destino) {
+      setErro('Preencha endereço e cidade de origem e destino.')
       return
     }
     setLoading(true)
