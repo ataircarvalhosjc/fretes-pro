@@ -47,6 +47,17 @@ function Field({
 const inputClass =
   'w-full px-3.5 py-2.5 text-sm font-body bg-slate-50 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/10 focus:bg-white transition-all'
 
+function parseDateBR(date: string): string | null {
+  if (!date || date.length < 8) return null
+  const digits = date.replace(/\D/g, '')
+  if (digits.length < 8) return null
+  const dd = digits.slice(0, 2)
+  const mm = digits.slice(2, 4)
+  const yy = digits.slice(4)
+  const year = yy.length === 2 ? `20${yy}` : yy
+  return `${year}-${mm}-${dd}`
+}
+
 export default function NovoOrcamentoPage() {
   const supabase = useSupabase()
   const router = useRouter()
@@ -56,8 +67,10 @@ export default function NovoOrcamentoPage() {
   const [form, setForm] = useState({
     cliente_nome: '',
     cliente_whatsapp: '',
-    origem: '',
-    destino: '',
+    endereco_origem: '',
+    cidade_origem: '',
+    endereco_destino: '',
+    cidade_destino: '',
     descricao: '',
     tipo_veiculo_necessario: '',
     peso_kg: '',
@@ -73,18 +86,27 @@ export default function NovoOrcamentoPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+
+    if (form.data_frete && form.data_frete.replace(/\D/g, '').length < 8) {
+      setError('Data inválida. Use DD/MM/AAAA (ex: 21/04/2026).')
+      return
+    }
+
     setSaving(true)
+
+    const origem = [form.endereco_origem, form.cidade_origem].filter(Boolean).join(', ')
+    const destino = [form.endereco_destino, form.cidade_destino].filter(Boolean).join(', ')
 
     const payload = {
       cliente_nome: form.cliente_nome,
       cliente_whatsapp: form.cliente_whatsapp.replace(/\D/g, ''),
-      origem: form.origem,
-      destino: form.destino,
+      origem,
+      destino,
       descricao: form.descricao || null,
       tipo_veiculo_necessario: form.tipo_veiculo_necessario || null,
       peso_kg: form.peso_kg ? parseInt(form.peso_kg) : null,
       valor_estimado: form.valor_estimado ? parseFloat(form.valor_estimado.replace(',', '.')) : null,
-      data_frete: form.data_frete ? form.data_frete.split('/').reverse().join('-') : null,
+      data_frete: parseDateBR(form.data_frete),
       observacoes: form.observacoes || null,
       status: 'pendente',
       motoristas_notificados: 0,
@@ -137,23 +159,43 @@ export default function NovoOrcamentoPage() {
           </FormSection>
 
           <FormSection title="Detalhes do Frete">
-            <Field label="Endereço de origem" required full>
+            <Field label="Endereço de origem" required>
               <input
                 type="text"
                 className={inputClass}
-                placeholder="Rua, número, bairro, cidade — Ex: Rua das Flores, 123, Centro, São Paulo/SP"
-                value={form.origem}
-                onChange={(e) => set('origem', e.target.value)}
+                placeholder="Rua, número, bairro"
+                value={form.endereco_origem}
+                onChange={(e) => set('endereco_origem', e.target.value)}
                 required
               />
             </Field>
-            <Field label="Endereço de destino" required full>
+            <Field label="Cidade de origem" required>
               <input
                 type="text"
                 className={inputClass}
-                placeholder="Rua, número, bairro, cidade — Ex: Av. Brasil, 456, Jardim América, Guarulhos/SP"
-                value={form.destino}
-                onChange={(e) => set('destino', e.target.value)}
+                placeholder="Ex: São Paulo / SP"
+                value={form.cidade_origem}
+                onChange={(e) => set('cidade_origem', e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Endereço de destino" required>
+              <input
+                type="text"
+                className={inputClass}
+                placeholder="Rua, número, bairro"
+                value={form.endereco_destino}
+                onChange={(e) => set('endereco_destino', e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Cidade de destino" required>
+              <input
+                type="text"
+                className={inputClass}
+                placeholder="Ex: Guarulhos / SP"
+                value={form.cidade_destino}
+                onChange={(e) => set('cidade_destino', e.target.value)}
                 required
               />
             </Field>

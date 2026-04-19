@@ -152,8 +152,10 @@ export default function SolicitarFretePage() {
   const [form, setForm] = useState({
     cliente_nome: '',
     cliente_whatsapp: '',
-    origem: '',
-    destino: '',
+    endereco_origem: '',
+    cidade_origem: '',
+    endereco_destino: '',
+    cidade_destino: '',
     descricao: '',
     tipo_veiculo_necessario: '',
     peso_kg: '',
@@ -191,14 +193,24 @@ export default function SolicitarFretePage() {
     }
     setLoading(true)
     try {
+      const digits = form.data_frete.replace(/\D/g, '')
+      const dd = digits.slice(0, 2), mm = digits.slice(2, 4), yy = digits.slice(4)
+      const year = yy.length === 2 ? `20${yy}` : yy
+      const dataConvertida = digits.length >= 8 ? `${year}-${mm}-${dd}` : null
+
       const res = await fetch('/api/solicitar-frete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
+          cliente_nome: form.cliente_nome,
           cliente_whatsapp: form.cliente_whatsapp.replace(/\D/g, ''),
+          origem: [form.endereco_origem, form.cidade_origem].filter(Boolean).join(', '),
+          destino: [form.endereco_destino, form.cidade_destino].filter(Boolean).join(', '),
+          descricao: form.descricao || null,
+          tipo_veiculo_necessario: form.tipo_veiculo_necessario || null,
           peso_kg: form.peso_kg ? parseInt(form.peso_kg) : null,
-          data_frete: form.data_frete ? form.data_frete.split('/').reverse().join('-') : null,
+          data_frete: dataConvertida,
+          observacoes: form.observacoes || null,
         }),
       })
       const data = await res.json()
@@ -258,7 +270,7 @@ export default function SolicitarFretePage() {
               <span className="text-xl">📍</span>
               <div>
                 <p className="text-white/30 text-[10px] uppercase tracking-wider">Rota</p>
-                <p className="text-white text-sm font-bold">{form.origem} → {form.destino}</p>
+                <p className="text-white text-sm font-bold">{[form.endereco_origem, form.cidade_origem].filter(Boolean).join(', ')} → {[form.endereco_destino, form.cidade_destino].filter(Boolean).join(', ')}</p>
               </div>
             </div>
             {form.descricao && (
@@ -495,9 +507,19 @@ export default function SolicitarFretePage() {
                 <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de origem *</label>
                 <input
                   className={inputClass}
-                  placeholder="Rua, número, bairro, cidade — Ex: Rua das Flores, 123, Centro, SP"
-                  value={form.origem}
-                  onChange={(e) => set('origem', e.target.value)}
+                  placeholder="Rua, número, bairro"
+                  value={form.endereco_origem}
+                  onChange={(e) => set('endereco_origem', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade de origem *</label>
+                <input
+                  className={inputClass}
+                  placeholder="Ex: São Paulo / SP"
+                  value={form.cidade_origem}
+                  onChange={(e) => set('cidade_origem', e.target.value)}
                   required
                 />
               </div>
@@ -505,9 +527,19 @@ export default function SolicitarFretePage() {
                 <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de destino *</label>
                 <input
                   className={inputClass}
-                  placeholder="Rua, número, bairro, cidade — Ex: Av. Brasil, 456, Jardim América, SP"
-                  value={form.destino}
-                  onChange={(e) => set('destino', e.target.value)}
+                  placeholder="Rua, número, bairro"
+                  value={form.endereco_destino}
+                  onChange={(e) => set('endereco_destino', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade de destino *</label>
+                <input
+                  className={inputClass}
+                  placeholder="Ex: Guarulhos / SP"
+                  value={form.cidade_destino}
+                  onChange={(e) => set('cidade_destino', e.target.value)}
                   required
                 />
               </div>

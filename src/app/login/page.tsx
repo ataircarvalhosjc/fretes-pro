@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
-import { Truck, Lock, Mail, Loader2 } from 'lucide-react'
+import { Truck, Lock, Mail, Loader2, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -11,6 +11,9 @@ export default function LoginPage() {
   const [senha, setSenha] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
+  const [mostrarSenha, setMostrarSenha] = useState(false)
+  const [recuperando, setRecuperando] = useState(false)
+  const [msgRecuperacao, setMsgRecuperacao] = useState('')
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -28,6 +31,28 @@ export default function LoginPage() {
 
     router.push('/')
     router.refresh()
+  }
+
+  async function handleRecuperarSenha() {
+    if (!email) {
+      setErro('Digite seu e-mail acima para recuperar a senha.')
+      return
+    }
+    setRecuperando(true)
+    setErro('')
+    setMsgRecuperacao('')
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+
+    setRecuperando(false)
+    if (error) {
+      setErro('Erro ao enviar e-mail. Tente novamente.')
+    } else {
+      setMsgRecuperacao('E-mail de recuperação enviado! Verifique sua caixa de entrada.')
+    }
   }
 
   return (
@@ -70,19 +95,43 @@ export default function LoginPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
-                  type="password"
+                  type={mostrarSenha ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   required
-                  className="w-full bg-[#0D1424] border border-white/10 rounded-xl pl-9 pr-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-orange-500 transition font-body"
+                  className="w-full bg-[#0D1424] border border-white/10 rounded-xl pl-9 pr-10 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-orange-500 transition font-body"
                 />
+                <button
+                  type="button"
+                  onClick={() => setMostrarSenha(!mostrarSenha)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition"
+                >
+                  {mostrarSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleRecuperarSenha}
+                disabled={recuperando}
+                className="text-xs text-orange-400 hover:text-orange-300 transition font-body"
+              >
+                {recuperando ? 'Enviando...' : 'Esqueci minha senha'}
+              </button>
             </div>
 
             {erro && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400 font-body">
                 {erro}
+              </div>
+            )}
+
+            {msgRecuperacao && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 text-sm text-green-400 font-body">
+                {msgRecuperacao}
               </div>
             )}
 
