@@ -69,6 +69,9 @@ export default function OrcamentoDetailPage() {
   const [editandoValor, setEditandoValor] = useState(false)
   const [novoValor, setNovoValor] = useState('')
   const [salvandoValor, setSalvandoValor] = useState(false)
+  const [distancia, setDistancia] = useState<{ distanciaKm: number; duracaoMin: number } | null>(null)
+  const [calculando, setCalculando] = useState(false)
+  const [erroDistancia, setErroDistancia] = useState('')
 
   useEffect(() => {
     fetchData()
@@ -140,6 +143,26 @@ export default function OrcamentoDetailPage() {
     await supabase.from('notificacoes').delete().eq('orcamento_id', id)
     await supabase.from('orcamentos').delete().eq('id', id)
     router.push('/orcamentos')
+  }
+
+  async function calcularDistancia() {
+    if (!orcamento) return
+    setCalculando(true)
+    setErroDistancia('')
+    try {
+      const res = await fetch('/api/calcular-distancia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origem: orcamento.origem, destino: orcamento.destino }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setDistancia(data)
+    } catch (e: unknown) {
+      setErroDistancia(e instanceof Error ? e.message : 'Erro ao calcular')
+    } finally {
+      setCalculando(false)
+    }
   }
 
   async function salvarValor() {
@@ -271,6 +294,39 @@ export default function OrcamentoDetailPage() {
                 <InfoItem icon={Phone} label="WhatsApp" value={orcamento.cliente_whatsapp} />
                 <InfoItem icon={MapPin} label="Origem" value={orcamento.origem} />
                 <InfoItem icon={MapPin} label="Destino" value={orcamento.destino} />
+                <div className="sm:col-span-2">
+                  {distancia ? (
+                    <div className="flex items-center gap-4 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+                      <Truck className="w-4 h-4 text-blue-400 shrink-0" />
+                      <div className="flex gap-6">
+                        <div>
+                          <p className="text-xs text-blue-400 font-body font-semibold uppercase tracking-wide">Distância</p>
+                          <p className="text-sm font-body font-bold text-blue-700">{distancia.distanciaKm} km</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-blue-400 font-body font-semibold uppercase tracking-wide">Tempo estimado</p>
+                          <p className="text-sm font-body font-bold text-blue-700">
+                            {distancia.duracaoMin >= 60
+                              ? `${Math.floor(distancia.duracaoMin / 60)}h ${distancia.duracaoMin % 60}min`
+                              : `${distancia.duracaoMin} min`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={calcularDistancia}
+                        disabled={calculando}
+                        className="flex items-center gap-2 text-xs font-body font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 px-4 py-2 rounded-xl transition-all disabled:opacity-60"
+                      >
+                        {calculando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Truck className="w-3.5 h-3.5" />}
+                        {calculando ? 'Calculando...' : 'Calcular distância'}
+                      </button>
+                      {erroDistancia && <p className="text-xs text-red-500 font-body">{erroDistancia}</p>}
+                    </div>
+                  )}
+                </div>
                 <InfoItem
                   icon={Package}
                   label="Carga"
