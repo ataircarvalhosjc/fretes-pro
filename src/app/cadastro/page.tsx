@@ -67,8 +67,8 @@ export default function CadastroMotoristaPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nome || !form.whatsapp || !form.tipo_veiculo) {
-      setError('Preencha nome, WhatsApp e tipo de veículo.')
+    if (!form.nome || !form.whatsapp || !form.tipo_veiculo || !form.cidade || !form.estado) {
+      setError('Preencha nome, WhatsApp, tipo de veículo, cidade e estado.')
       return
     }
     setSaving(true)
@@ -280,11 +280,11 @@ export default function CadastroMotoristaPage() {
               <input type="email" className={input} placeholder="email@exemplo.com" value={form.email} onChange={(e) => set('email', e.target.value)} />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Cidade</label>
-              <input className={input} placeholder="Ex: São Paulo" value={form.cidade} onChange={(e) => set('cidade', e.target.value)} />
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Cidade <span className="text-orange-500">*</span></label>
+              <input className={input} placeholder="Ex: São Paulo" value={form.cidade} onChange={(e) => set('cidade', e.target.value)} required />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Estado</label>
+              <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Estado <span className="text-orange-500">*</span></label>
               <select className={select} value={form.estado} onChange={(e) => set('estado', e.target.value)}>
                 <option value="">Selecione...</option>
                 {ESTADOS_BR.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
