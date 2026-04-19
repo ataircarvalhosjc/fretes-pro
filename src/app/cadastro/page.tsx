@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TIPOS_VEICULO, CATEGORIAS_CNH, TIPOS_CARROCERIA, ESTADOS_BR } from '@/types'
 import { pedirPermissaoNotificacao } from '@/lib/firebase'
 
@@ -10,6 +10,26 @@ export default function CadastroMotoristaPage() {
   const [success, setSuccess] = useState(false)
   const [motoristaId, setMotoristaId] = useState('')
   const [notifStatus, setNotifStatus] = useState<'idle' | 'pedindo' | 'ok' | 'negado'>('idle')
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
+  const [installed, setInstalled] = useState(false)
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(console.error)
+    }
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => setInstalled(true))
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  async function instalarApp() {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setInstalled(true)
+    setInstallPrompt(null)
+  }
 
   const [form, setForm] = useState({
     nome: '',
@@ -168,6 +188,32 @@ export default function CadastroMotoristaPage() {
               </p>
             )}
           </div>
+
+          {/* Banner instalar PWA */}
+          {!installed && installPrompt && (
+            <div className="mt-4 bg-orange-500/10 border border-orange-500/30 rounded-2xl p-5 text-left">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">📲</span>
+                <div>
+                  <p className="text-white font-bold text-sm">Instale o app no celular!</p>
+                  <p className="text-gray-500 text-xs">Receba notificações mesmo com o navegador fechado</p>
+                </div>
+              </div>
+              <button
+                onClick={instalarApp}
+                className="w-full bg-orange-500 hover:bg-orange-400 text-white font-bold py-3 rounded-xl text-sm transition-all"
+              >
+                Adicionar à tela inicial
+              </button>
+            </div>
+          )}
+
+          {installed && (
+            <div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-4 flex items-center gap-3">
+              <span className="text-xl">✅</span>
+              <p className="text-emerald-400 text-sm font-bold">App instalado com sucesso!</p>
+            </div>
+          )}
         </div>
       </div>
     )
