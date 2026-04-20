@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { TIPOS_VEICULO } from '@/types'
 import { pedirPermissaoNotificacao, ouvirNotificacoesEmPrimeiroPLano } from '@/lib/firebase'
+import { TABELA_PRECOS, calcularFrete, formatarPreco } from '@/lib/tabela-precos'
 
 type Step = 1 | 2 | 'success'
 
@@ -432,6 +433,38 @@ export default function SolicitarFretePage() {
         <div className="max-w-xs mx-auto">
           <AnimatedRoute />
         </div>
+      </div>
+
+      {/* TABELA DE PREÇOS */}
+      <div className="relative px-4 py-12 max-w-3xl mx-auto">
+        <p className="text-center text-[10px] text-white/20 uppercase tracking-[0.4em] mb-2">Tabela de preços</p>
+        <h3 className="text-center text-white font-black text-xl mb-2">Valores aproximados</h3>
+        <p className="text-center text-white/30 text-xs mb-8">O valor exato é confirmado após análise do pedido</p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-white/20 uppercase tracking-wider border-b border-white/5">
+                <th className="text-left py-3 pr-4">Veículo</th>
+                <th className="text-right py-3 px-2">Mínimo</th>
+                <th className="text-right py-3 px-2">10 km</th>
+                <th className="text-right py-3 px-2">20 km</th>
+                <th className="text-right py-3 px-2">40 km</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(TABELA_PRECOS).map(([key, v]) => (
+                <tr key={key} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                  <td className="py-3 pr-4 font-bold text-white">{v.label}</td>
+                  <td className="py-3 px-2 text-right text-orange-400 font-semibold">{formatarPreco(v.base)}</td>
+                  <td className="py-3 px-2 text-right text-white/60">{formatarPreco(calcularFrete(10, key)!)}</td>
+                  <td className="py-3 px-2 text-right text-white/60">{formatarPreco(calcularFrete(20, key)!)}</td>
+                  <td className="py-3 px-2 text-right text-white/60">{formatarPreco(calcularFrete(40, key)!)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-center text-white/20 text-[10px] mt-4">* Valores sujeitos a alteração conforme tipo de carga, horário e condições da rota</p>
       </div>
 
       {/* COMO FUNCIONA */}
