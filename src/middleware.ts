@@ -27,6 +27,8 @@ export async function middleware(request: NextRequest) {
   const isLoginPage = request.nextUrl.pathname === '/login'
   const isPublicPage =
     request.nextUrl.pathname === '/cadastro' ||
+    request.nextUrl.pathname.startsWith('/solicitar') ||
+    request.nextUrl.pathname.startsWith('/rastrear') ||
     request.nextUrl.pathname.startsWith('/api/')
 
   if (!user && !isLoginPage && !isPublicPage) {
