@@ -673,51 +673,44 @@ export default function SolicitarFretePage() {
               )}
 
               <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">O que será transportado?</label>
-                <textarea
-                  className={`${inputClass} resize-none`}
-                  placeholder="Descreva a carga (móveis, equipamentos, mercadorias...)"
-                  rows={3}
-                  value={form.descricao}
-                  onChange={(e) => set('descricao', e.target.value)}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Tipo de veículo</label>
-                  <div className="relative">
-                    <select
-                      className={selectClass}
-                      value={form.tipo_veiculo_necessario}
-                      onChange={(e) => {
-                        set('tipo_veiculo_necessario', e.target.value)
-                        if (distanciaKm && e.target.value) {
-                          setValorEstimado(calcularFrete(distanciaKm, e.target.value))
-                        } else if (form.cidade_origem && form.cidade_destino) {
-                          const newForm = { ...form, tipo_veiculo_necessario: e.target.value }
-                          calcularDistanciaEValor(newForm)
-                        }
-                      }}
-                    >
-                      <option value="">Selecione...</option>
-                      {TIPOS_VEICULO.map((t) => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">▾</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Peso estimado (kg)</label>
-                  <input
-                    type="number"
-                    className={inputClass}
-                    placeholder="Ex: 500"
-                    value={form.peso_kg}
-                    onChange={(e) => set('peso_kg', e.target.value)}
-                    min={0}
-                  />
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-3">O que você vai transportar? *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { icon: '📄', label: 'Documento / Encomenda', sub: 'Até 5 kg', veiculo: 'moto' },
+                    { icon: '🛒', label: 'Compras / Caixas', sub: 'Peso leve', veiculo: 'utilitario' },
+                    { icon: '📺', label: 'Eletrodoméstico', sub: 'TV, fogão, geladeira...', veiculo: 'utilitario' },
+                    { icon: '🛋️', label: 'Móveis', sub: 'Sofá, armário, cama...', veiculo: 'furgao' },
+                    { icon: '🏠', label: 'Mudança', sub: 'Vários volumes', veiculo: 'furgao' },
+                    { icon: '📦', label: 'Mercadorias', sub: 'Caixas, paletes...', veiculo: 'utilitario' },
+                  ].map((cat) => {
+                    const selecionado = form.descricao === cat.label
+                    return (
+                      <button
+                        key={cat.label}
+                        type="button"
+                        onClick={() => {
+                          set('descricao', cat.label)
+                          const novoVeiculo = cat.veiculo
+                          setForm((prev) => {
+                            const newForm = { ...prev, descricao: cat.label, tipo_veiculo_necessario: novoVeiculo }
+                            if (distanciaKm) {
+                              setValorEstimado(calcularFrete(distanciaKm, novoVeiculo))
+                            } else if (newForm.cidade_origem && newForm.cidade_destino) {
+                              calcularDistanciaEValor(newForm)
+                            }
+                            return newForm
+                          })
+                        }}
+                        className={`flex items-center gap-3 px-3 py-3 rounded-xl border text-left transition-all ${selecionado ? 'bg-orange-500/20 border-orange-500/50' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/15'}`}
+                      >
+                        <span className="text-2xl shrink-0">{cat.icon}</span>
+                        <div className="min-w-0">
+                          <p className={`text-xs font-bold leading-tight ${selecionado ? 'text-orange-300' : 'text-white'}`}>{cat.label}</p>
+                          <p className="text-[10px] text-white/30 mt-0.5">{cat.sub}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
