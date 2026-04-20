@@ -1,36 +1,35 @@
-const UAZAP_BASE_URL = 'https://ipazua.uazapi.com'
+const ZAPI_INSTANCE = process.env.ZAPI_INSTANCE_ID
+const ZAPI_TOKEN = process.env.ZAPI_TOKEN
 
 export async function enviarWhatsApp(phone: string, message: string): Promise<boolean> {
-  const token = process.env.UAZAP_TOKEN
-
-  if (!token || token === 'placeholder-uazap-token') {
-    console.error('[uazap] UAZAP_TOKEN não configurado ou é placeholder')
+  if (!ZAPI_INSTANCE || !ZAPI_TOKEN) {
+    console.error('[zapi] ZAPI_INSTANCE_ID ou ZAPI_TOKEN não configurado')
     return false
   }
 
-  console.log(`[uazap] Enviando para ${phone}`)
+  console.log(`[zapi] Enviando para ${phone}`)
 
   try {
-    const response = await fetch(`${UAZAP_BASE_URL}/send/text`, {
-      method: 'POST',
-      headers: {
-        'token': token,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ number: phone, text: message }),
-    })
+    const response = await fetch(
+      `https://api.z-api.io/instances/${ZAPI_INSTANCE}/token/${ZAPI_TOKEN}/send-text`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, message }),
+      }
+    )
 
     const body = await response.text()
-    console.log(`[uazap] Status: ${response.status} | Resposta: ${body}`)
+    console.log(`[zapi] Status: ${response.status} | Resposta: ${body}`)
 
     if (!response.ok) {
-      console.error(`[uazap] Erro ${response.status}:`, body)
+      console.error(`[zapi] Erro ${response.status}:`, body)
       return false
     }
 
     return true
   } catch (error) {
-    console.error('[uazap] Falha na requisição:', error)
+    console.error('[zapi] Falha na requisição:', error)
     return false
   }
 }
