@@ -28,6 +28,7 @@ import {
   Loader2,
   Trash2,
 } from 'lucide-react'
+import { calcularFrete, formatarPreco, TABELA_PRECOS } from '@/lib/tabela-precos'
 
 function InfoItem({
   icon: Icon,
@@ -158,6 +159,15 @@ export default function OrcamentoDetailPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setDistancia(data)
+
+      // Auto-calcula o valor se não tiver valor definido e tiver tipo de veículo
+      if (!orcamento.valor_estimado && orcamento.tipo_veiculo_necessario) {
+        const sugestao = calcularFrete(data.distanciaKm, orcamento.tipo_veiculo_necessario)
+        if (sugestao) {
+          setNovoValor(String(sugestao))
+          setEditandoValor(true)
+        }
+      }
     } catch (e: unknown) {
       setErroDistancia(e instanceof Error ? e.message : 'Erro ao calcular')
     } finally {

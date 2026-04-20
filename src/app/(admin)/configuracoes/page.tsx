@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { Header } from '@/components/layout/Header'
 import { Settings, Truck, MessageSquare, DollarSign, ExternalLink } from 'lucide-react'
+import { TABELA_PRECOS, calcularFrete, formatarPreco } from '@/lib/tabela-precos'
 
 function ConfigSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
@@ -101,29 +102,36 @@ export default function ConfiguracoesPage() {
           </div>
         </ConfigSection>
 
-        <ConfigSection title="Tipos de Veículo" icon={Truck}>
-          <div className="space-y-2">
-            {[
-              { label: 'Moto', cap: 'até 30 kg', desc: 'Delivery urbano rápido' },
-              { label: 'Utilitário/Furgão', cap: 'até 700 kg', desc: 'Entregas urbanas leves' },
-              { label: 'Van / VUC (¾)', cap: 'até 1.500 kg', desc: 'Pequenos fretes e mudanças' },
-              { label: 'VUC - Caminhão ¾', cap: 'até 3.000 kg', desc: 'Entregas urbanas médias' },
-              { label: 'Toco - Semipesado', cap: 'até 6.000 kg', desc: 'Carga seca, mudanças, baú' },
-              { label: 'Truck 6x2', cap: 'até 14.000 kg', desc: 'Longas distâncias, granel' },
-              { label: 'Bitruck 4 eixos', cap: 'até 22.000 kg', desc: 'Granéis, tanque' },
-              { label: 'Carreta Simples', cap: 'até 25.000 kg', desc: 'Longas distâncias' },
-              { label: 'Bitrem 7 eixos', cap: 'até 57.000 kg', desc: 'Grandes cargas' },
-            ].map((v) => (
-              <div key={v.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-                <div>
-                  <p className="text-sm font-body font-semibold text-slate-700">{v.label}</p>
-                  <p className="text-xs font-body text-slate-400">{v.desc}</p>
-                </div>
-                <span className="text-xs font-body font-semibold text-slate-500 bg-slate-50 border border-slate-100 px-2 py-1 rounded-lg font-tabular">
-                  {v.cap}
-                </span>
-              </div>
-            ))}
+        <ConfigSection title="Tabela de Preços Aproximados" icon={DollarSign}>
+          <div className="space-y-3">
+            <p className="text-xs text-slate-400 font-body">Valores calculados automaticamente por distância. O valor final é confirmado pelo administrador antes do envio.</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs font-body">
+                <thead>
+                  <tr className="text-slate-400 uppercase tracking-wide border-b border-gray-100">
+                    <th className="text-left py-2 pr-3">Veículo</th>
+                    <th className="text-right py-2 px-2">Mínimo</th>
+                    <th className="text-right py-2 px-2">10 km</th>
+                    <th className="text-right py-2 px-2">20 km</th>
+                    <th className="text-right py-2 px-2">40 km</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(TABELA_PRECOS).map(([key, v]) => (
+                    <tr key={key} className="border-b border-gray-50 last:border-0">
+                      <td className="py-2.5 pr-3 font-semibold text-slate-700">{v.label}</td>
+                      <td className="py-2.5 px-2 text-right text-slate-600">{formatarPreco(v.base)}</td>
+                      <td className="py-2.5 px-2 text-right text-slate-600">{formatarPreco(calcularFrete(10, key)!)}</td>
+                      <td className="py-2.5 px-2 text-right text-slate-600">{formatarPreco(calcularFrete(20, key)!)}</td>
+                      <td className="py-2.5 px-2 text-right text-slate-600">{formatarPreco(calcularFrete(40, key)!)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+              <p className="text-xs text-amber-700 font-body">⚠️ Valores aproximados — o preço exato é definido pelo administrador em cada orçamento antes do envio ao cliente.</p>
+            </div>
           </div>
         </ConfigSection>
       </div>
