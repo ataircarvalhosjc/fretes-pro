@@ -149,21 +149,27 @@ export default function SolicitarFretePage() {
   const [freteId, setFreteId] = useState('')
   const [notifStatus, setNotifStatus] = useState<'idle' | 'pedindo' | 'ok' | 'negado'>('idle')
   const formRef = useRef<HTMLDivElement>(null)
+  const [distanciaKm, setDistanciaKm] = useState<number | null>(null)
+  const [valorEstimado, setValorEstimado] = useState<number | null>(null)
+  const [calculando, setCalculando] = useState(false)
+  const [buscandoCep, setBuscandoCep] = useState<'origem' | 'destino' | null>(null)
 
   const [form, setForm] = useState({
     cliente_nome: '',
     cliente_whatsapp: '',
-    endereco_origem: '',
     cep_origem: '',
+    numero_origem: '',
+    endereco_origem: '',
     cidade_origem: '',
-    endereco_destino: '',
     cep_destino: '',
+    numero_destino: '',
+    endereco_destino: '',
     cidade_destino: '',
     descricao: '',
     tipo_veiculo_necessario: '',
     peso_kg: '',
-    valor_estimado: '',
     data_frete: '',
+    horario_frete: '',
     observacoes: '',
   })
 
@@ -179,6 +185,54 @@ export default function SolicitarFretePage() {
     return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`
   }
 
+  async function buscarCep(cep: string, tipo: 'origem' | 'destino') {
+    const digits = cep.replace(/\D/g, '')
+    if (digits.length !== 8) return
+    setBuscandoCep(tipo)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await res.json()
+      if (data.erro) return
+      const endereco = [data.logradouro, data.bairro].filter(Boolean).join(', ')
+      const cidade = `${data.localidade} / ${data.uf}`
+      setForm((prev) => {
+        const newForm = tipo === 'origem'
+          ? { ...prev, endereco_origem: endereco, cidade_origem: cidade }
+          : { ...prev, endereco_destino: endereco, cidade_destino: cidade }
+        // Calcula distância automaticamente se ambos os endereços estiverem preenchidos
+        if (newForm.cidade_origem && newForm.cidade_destino && newForm.tipo_veiculo_necessario) {
+          calcularDistanciaEValor(newForm)
+        }
+        return newForm
+      })
+    } catch { } finally {
+      setBuscandoCep(null)
+    }
+  }
+
+  async function calcularDistanciaEValor(novoForm: typeof form) {
+    const origem = [novoForm.endereco_origem, novoForm.numero_origem, novoForm.cidade_origem].filter(Boolean).join(', ')
+    const destino = [novoForm.endereco_destino, novoForm.numero_destino, novoForm.cidade_destino].filter(Boolean).join(', ')
+    if (!novoForm.cidade_origem || !novoForm.cidade_destino) return
+    setCalculando(true)
+    try {
+      const res = await fetch('/api/calcular-distancia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ origem, destino }),
+      })
+      const data = await res.json()
+      if (!res.ok) return
+      setDistanciaKm(data.distanciaKm)
+      if (novoForm.tipo_veiculo_necessario) {
+        const valor = calcularFrete(data.distanciaKm, novoForm.tipo_veiculo_necessario)
+        setValorEstimado(valor)
+      }
+    } catch { } finally {
+      setCalculando(false)
+    }
+  }
+
   function nextStep() {
     if (!form.cliente_nome || !form.cliente_whatsapp) {
       setErro('Preencha nome e WhatsApp.')
@@ -192,7 +246,7 @@ export default function SolicitarFretePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.endereco_origem || !form.cidade_origem || !form.endereco_destino || !form.cidade_destino) {
-      setErro('Preencha endereço e cidade de origem e destino.')
+      setErro('Preencha os CEPs de origem e destino.')
       return
     }
     setLoading(true)
@@ -208,13 +262,14 @@ export default function SolicitarFretePage() {
         body: JSON.stringify({
           cliente_nome: form.cliente_nome,
           cliente_whatsapp: form.cliente_whatsapp.replace(/\D/g, ''),
-          origem: [form.endereco_origem, form.cep_origem ? `CEP ${form.cep_origem}` : '', form.cidade_origem].filter(Boolean).join(', '),
-          destino: [form.endereco_destino, form.cep_destino ? `CEP ${form.cep_destino}` : '', form.cidade_destino].filter(Boolean).join(', '),
+          origem: [form.endereco_origem, form.numero_origem, `CEP ${form.cep_origem}`, form.cidade_origem].filter(Boolean).join(', '),
+          destino: [form.endereco_destino, form.numero_destino, `CEP ${form.cep_destino}`, form.cidade_destino].filter(Boolean).join(', '),
           descricao: form.descricao || null,
           tipo_veiculo_necessario: form.tipo_veiculo_necessario || null,
           peso_kg: form.peso_kg ? parseInt(form.peso_kg) : null,
-          valor_estimado: form.valor_estimado ? parseFloat(form.valor_estimado.replace(',', '.')) : null,
+          valor_estimado: valorEstimado || null,
           data_frete: dataConvertida,
+          horario_frete: form.horario_frete || null,
           observacoes: form.observacoes || null,
         }),
       })
@@ -222,7 +277,6 @@ export default function SolicitarFretePage() {
       if (!res.ok) throw new Error(data.error)
       setFreteId(data.id)
       setStep('success')
-      // Ativa listener de notificações em primeiro plano
       ouvirNotificacoesEmPrimeiroPLano()
     } catch (err: unknown) {
       setErro(err instanceof Error ? err.message : 'Erro ao enviar solicitação')
@@ -540,19 +594,10 @@ export default function SolicitarFretePage() {
 
           {step === 2 && (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* ORIGEM */}
               <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de origem *</label>
-                <input
-                  className={inputClass}
-                  placeholder="Rua, número, bairro"
-                  value={form.endereco_origem}
-                  onChange={(e) => set('endereco_origem', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">CEP origem</label>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">CEP de origem *</label>
+                <div className="relative">
                   <input
                     className={inputClass}
                     placeholder="00000-000"
@@ -563,33 +608,35 @@ export default function SolicitarFretePage() {
                       let v = e.target.value.replace(/\D/g, '').slice(0, 8)
                       if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
                       set('cep_origem', v)
+                      if (v.replace(/\D/g, '').length === 8) buscarCep(v, 'origem')
                     }}
                   />
+                  {buscandoCep === 'origem' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">buscando...</span>}
                 </div>
+              </div>
+              {form.endereco_origem && (
+                <div className="bg-white/5 rounded-xl px-4 py-3 text-xs text-white/60">
+                  📍 {form.endereco_origem} — {form.cidade_origem}
+                </div>
+              )}
+              {form.endereco_origem && (
                 <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade origem *</label>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Número *</label>
                   <input
                     className={inputClass}
-                    placeholder="São Paulo / SP"
-                    value={form.cidade_origem}
-                    onChange={(e) => set('cidade_origem', e.target.value)}
+                    placeholder="Ex: 123"
+                    inputMode="numeric"
+                    value={form.numero_origem}
+                    onChange={(e) => set('numero_origem', e.target.value)}
                     required
                   />
                 </div>
-              </div>
+              )}
+
+              {/* DESTINO */}
               <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Endereço de destino *</label>
-                <input
-                  className={inputClass}
-                  placeholder="Rua, número, bairro"
-                  value={form.endereco_destino}
-                  onChange={(e) => set('endereco_destino', e.target.value)}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">CEP destino</label>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">CEP de destino *</label>
+                <div className="relative">
                   <input
                     className={inputClass}
                     placeholder="00000-000"
@@ -600,20 +647,30 @@ export default function SolicitarFretePage() {
                       let v = e.target.value.replace(/\D/g, '').slice(0, 8)
                       if (v.length > 5) v = v.slice(0, 5) + '-' + v.slice(5)
                       set('cep_destino', v)
+                      if (v.replace(/\D/g, '').length === 8) buscarCep(v, 'destino')
                     }}
                   />
+                  {buscandoCep === 'destino' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">buscando...</span>}
                 </div>
+              </div>
+              {form.endereco_destino && (
+                <div className="bg-white/5 rounded-xl px-4 py-3 text-xs text-white/60">
+                  📍 {form.endereco_destino} — {form.cidade_destino}
+                </div>
+              )}
+              {form.endereco_destino && (
                 <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Cidade destino *</label>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Número *</label>
                   <input
                     className={inputClass}
-                    placeholder="Guarulhos / SP"
-                    value={form.cidade_destino}
-                    onChange={(e) => set('cidade_destino', e.target.value)}
+                    placeholder="Ex: 456"
+                    inputMode="numeric"
+                    value={form.numero_destino}
+                    onChange={(e) => set('numero_destino', e.target.value)}
                     required
                   />
                 </div>
-              </div>
+              )}
 
               <div>
                 <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">O que será transportado?</label>
@@ -633,9 +690,17 @@ export default function SolicitarFretePage() {
                     <select
                       className={selectClass}
                       value={form.tipo_veiculo_necessario}
-                      onChange={(e) => set('tipo_veiculo_necessario', e.target.value)}
+                      onChange={(e) => {
+                        set('tipo_veiculo_necessario', e.target.value)
+                        if (distanciaKm && e.target.value) {
+                          setValorEstimado(calcularFrete(distanciaKm, e.target.value))
+                        } else if (form.cidade_origem && form.cidade_destino) {
+                          const newForm = { ...form, tipo_veiculo_necessario: e.target.value }
+                          calcularDistanciaEValor(newForm)
+                        }
+                      }}
                     >
-                      <option value="">Qualquer</option>
+                      <option value="">Selecione...</option>
                       {TIPOS_VEICULO.map((t) => (
                         <option key={t.value} value={t.value}>{t.label}</option>
                       ))}
@@ -656,34 +721,57 @@ export default function SolicitarFretePage() {
                 </div>
               </div>
 
+              {/* VALOR ESTIMADO */}
+              {calculando && (
+                <div className="bg-white/5 rounded-xl px-4 py-3 text-xs text-white/40 flex items-center gap-2">
+                  <div className="w-3 h-3 border border-orange-500 border-t-transparent rounded-full animate-spin" />
+                  Calculando distância e valor...
+                </div>
+              )}
+              {valorEstimado && !calculando && (
+                <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-orange-400 uppercase tracking-widest font-bold">Valor estimado</span>
+                    {distanciaKm && <span className="text-[10px] text-white/30">{distanciaKm} km</span>}
+                  </div>
+                  <p className="text-2xl font-black text-orange-400">{formatarPreco(valorEstimado)}</p>
+                  <p className="text-[10px] text-white/30 mt-1">⚠️ Valor estimado. Pode variar conforme tipo de carga, horário e condições da rota.</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Valor estimado (R$)</label>
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Data do frete</label>
                   <input
                     type="text"
                     className={inputClass}
-                    placeholder="Ex: 350,00"
-                    inputMode="decimal"
-                    value={form.valor_estimado}
-                    onChange={(e) => set('valor_estimado', e.target.value)}
+                    placeholder="DD/MM/AAAA"
+                    maxLength={10}
+                    inputMode="numeric"
+                    value={form.data_frete}
+                    onChange={(e) => {
+                      let v = e.target.value.replace(/\D/g, '').slice(0, 8)
+                      if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                      else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
+                      set('data_frete', v)
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Data do frete</label>
-                <input
-                  type="text"
-                  className={inputClass}
-                  placeholder="DD/MM/AAAA"
-                  maxLength={10}
-                  inputMode="numeric"
-                  value={form.data_frete}
-                  onChange={(e) => {
-                    let v = e.target.value.replace(/\D/g, '').slice(0, 8)
-                    if (v.length >= 5) v = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
-                    else if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2)
-                    set('data_frete', v)
-                  }}
-                />
+                  <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Horário</label>
+                  <input
+                    type="text"
+                    className={inputClass}
+                    placeholder="HH:MM"
+                    maxLength={5}
+                    inputMode="numeric"
+                    value={form.horario_frete}
+                    onChange={(e) => {
+                      let v = e.target.value.replace(/\D/g, '').slice(0, 4)
+                      if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2)
+                      set('horario_frete', v)
+                    }}
+                  />
                 </div>
               </div>
 

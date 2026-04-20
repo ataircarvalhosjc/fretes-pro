@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       peso_kg: body.peso_kg ? parseInt(String(body.peso_kg)) : null,
       valor_estimado: body.valor_estimado ? parseFloat(String(body.valor_estimado)) : null,
       data_frete: body.data_frete || null,
+      horario_frete: body.horario_frete || null,
       observacoes: body.observacoes || null,
       status: 'pendente',
     })
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
   const linkRastreio = `${baseUrl}/rastrear/${data.id}`
 
   // Notificação para o admin
-  const msgAdmin = `🔔 *NOVO PEDIDO DE FRETE*\n\n👤 *Cliente:* ${body.cliente_nome}\n📲 *WhatsApp:* ${whatsapp}\n📍 *De:* ${body.origem}\n📍 *Para:* ${body.destino}${body.descricao ? `\n📦 *Carga:* ${body.descricao}` : ''}${body.peso_kg ? `\n⚖️ *Peso:* ${body.peso_kg} kg` : ''}${body.data_frete ? `\n📅 *Data:* ${body.data_frete}` : ''}${body.observacoes ? `\n📝 *Obs:* ${body.observacoes}` : ''}\n\n🔍 *Rastreamento:*\n${linkRastreio}\n\n⚡ Acesse o painel para aprovar!\n\n_Fretes IA Log_`
+  const msgAdmin = `🔔 *NOVO PEDIDO DE FRETE*\n\n👤 *Cliente:* ${body.cliente_nome}\n📲 *WhatsApp:* ${whatsapp}\n📍 *De:* ${body.origem}\n📍 *Para:* ${body.destino}${body.descricao ? `\n📦 *Carga:* ${body.descricao}` : ''}${body.peso_kg ? `\n⚖️ *Peso:* ${body.peso_kg} kg` : ''}${body.data_frete ? `\n📅 *Data:* ${body.data_frete}${body.horario_frete ? ` às ${body.horario_frete}` : ''}` : ''}${body.observacoes ? `\n📝 *Obs:* ${body.observacoes}` : ''}\n\n🔍 *Rastreamento:*\n${linkRastreio}\n\n⚡ Acesse o painel para aprovar!\n\n_Fretes IA Log_`
 
   enviarWhatsApp('5512982273194', msgAdmin).catch(console.error)
 
