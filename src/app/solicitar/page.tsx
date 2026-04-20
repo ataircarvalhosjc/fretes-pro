@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { TIPOS_VEICULO } from '@/types'
 import { pedirPermissaoNotificacao, ouvirNotificacoesEmPrimeiroPLano } from '@/lib/firebase'
-import { TABELA_PRECOS, calcularFrete, formatarPreco } from '@/lib/tabela-precos'
+import { TABELA_PRECOS_PUBLICO, calcularFrete, formatarPreco } from '@/lib/tabela-precos'
 
 type Step = 1 | 2 | 'success'
 
@@ -452,7 +452,7 @@ export default function SolicitarFretePage() {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(TABELA_PRECOS).map(([key, v]) => (
+              {Object.entries(TABELA_PRECOS_PUBLICO).map(([key, v]) => (
                 <tr key={key} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
                   <td className="py-3 pr-4 font-bold text-white">{v.label}</td>
                   <td className="py-3 px-2 text-right text-orange-400 font-semibold">{formatarPreco(v.base)}</td>
@@ -464,7 +464,7 @@ export default function SolicitarFretePage() {
             </tbody>
           </table>
         </div>
-        <p className="text-center text-white/20 text-[10px] mt-4">* Valores sujeitos a alteração conforme tipo de carga, horário e condições da rota</p>
+        <p className="text-center text-white/20 text-[10px] mt-4">* Os valores não são fixos e variam conforme o tipo de carga, horário e condições da rota. O valor exato é confirmado após análise do pedido.</p>
       </div>
 
       {/* COMO FUNCIONA */}

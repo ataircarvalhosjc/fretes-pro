@@ -16,6 +16,12 @@ export const TABELA_PRECOS: Record<string, FaixaPreco> = {
   carreta:     { label: 'Carreta',        base: 350, km_5_15: 18.00, km_15_30: 14.00, km_30plus: 10.00 },
 }
 
+export const TABELA_PRECOS_PUBLICO: Record<string, FaixaPreco> = {
+  moto:       TABELA_PRECOS.moto,
+  utilitario: TABELA_PRECOS.utilitario,
+  furgao:     TABELA_PRECOS.furgao,
+}
+
 export function calcularFrete(distanciaKm: number, tipoVeiculo: string): number | null {
   const tabela = TABELA_PRECOS[tipoVeiculo]
   if (!tabela) return null
