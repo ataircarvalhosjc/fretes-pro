@@ -725,17 +725,40 @@ export default function SolicitarFretePage() {
               {calculando && (
                 <div className="bg-white/5 rounded-xl px-4 py-3 text-xs text-white/40 flex items-center gap-2">
                   <div className="w-3 h-3 border border-orange-500 border-t-transparent rounded-full animate-spin" />
-                  Calculando distância e valor...
+                  Calculando distância e valores...
                 </div>
               )}
-              {valorEstimado && !calculando && (
+              {distanciaKm && !calculando && (
                 <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-orange-400 uppercase tracking-widest font-bold">Valor estimado</span>
-                    {distanciaKm && <span className="text-[10px] text-white/30">{distanciaKm} km</span>}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] text-orange-400 uppercase tracking-widest font-bold">Valores estimados</span>
+                    <span className="text-[10px] text-white/40 bg-white/5 px-2 py-1 rounded-lg">{distanciaKm} km</span>
                   </div>
-                  <p className="text-2xl font-black text-orange-400">{formatarPreco(valorEstimado)}</p>
-                  <p className="text-[10px] text-white/30 mt-1">⚠️ Valor estimado. Pode variar conforme tipo de carga, horário e condições da rota.</p>
+                  <div className="space-y-2">
+                    {Object.entries(TABELA_PRECOS_PUBLICO).map(([key, v]) => {
+                      const valor = calcularFrete(distanciaKm, key)
+                      const selecionado = form.tipo_veiculo_necessario === key
+                      return (
+                        <div
+                          key={key}
+                          onClick={() => {
+                            set('tipo_veiculo_necessario', key)
+                            setValorEstimado(valor)
+                          }}
+                          className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${selecionado ? 'bg-orange-500/20 border border-orange-500/50' : 'bg-white/5 border border-white/5 hover:bg-white/10'}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${selecionado ? 'border-orange-500 bg-orange-500' : 'border-white/20'}`}>
+                              {selecionado && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                            <span className="text-white text-xs font-semibold">{v.label}</span>
+                          </div>
+                          <span className={`text-sm font-black ${selecionado ? 'text-orange-400' : 'text-white/70'}`}>{valor ? formatarPreco(valor) : '--'}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <p className="text-[10px] text-white/25 mt-3">⚠️ Valores estimados. Podem variar conforme tipo de carga, horário e condições da rota.</p>
                 </div>
               )}
 
