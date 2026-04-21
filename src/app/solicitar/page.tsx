@@ -57,58 +57,103 @@ const selectClass =
 
 function AnimatedRoute() {
   const [progress, setProgress] = useState(0)
+  const [arrived, setArrived] = useState(false)
+
   useEffect(() => {
-    const t = setTimeout(() => {
-      let p = 0
-      const interval = setInterval(() => {
-        p += 2
-        setProgress(p)
-        if (p >= 100) clearInterval(interval)
-      }, 30)
-    }, 600)
-    return () => clearTimeout(t)
+    let p = 0
+    let pausing = false
+    let intervalId: ReturnType<typeof setInterval> | null = null
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+    function startAnim() {
+      p = 0
+      pausing = false
+      setProgress(0)
+      setArrived(false)
+      intervalId = setInterval(() => {
+        p += 1.2
+        setProgress(Math.min(p, 100))
+        if (p >= 100 && !pausing) {
+          pausing = true
+          setArrived(true)
+          clearInterval(intervalId!)
+          timeoutId = setTimeout(startAnim, 2000)
+        }
+      }, 20)
+    }
+
+    timeoutId = setTimeout(startAnim, 800)
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [])
 
   return (
-    <div className="relative flex items-center gap-3 my-8">
-      {/* Origem */}
-      <div className="flex flex-col items-center gap-1.5 shrink-0">
-        <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/40">
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </div>
-        <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest">Origem</span>
+    <div className="relative my-8 px-2">
+      {/* City labels */}
+      <div className="flex justify-between mb-3 px-1">
+        <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Origem</span>
+        <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors duration-500 ${arrived ? 'text-emerald-400' : 'text-white/20'}`}>Destino</span>
       </div>
 
-      {/* Linha animada */}
-      <div className="flex-1 relative h-1 bg-white/5 rounded-full overflow-hidden mx-2">
-        <div
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 to-orange-300 rounded-full transition-all duration-100"
-          style={{ width: `${progress}%` }}
-        />
-        {/* Caminhão animado */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 transition-all duration-100"
-          style={{ left: `calc(${progress}% - 12px)` }}
-        >
-          <div className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/50 -translate-y-1/2">
-            <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M1 3h15v13H1V3zm15 4h2.5l2.5 3v3h-5V7zM5.5 17a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm11 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+      <div className="relative flex items-center gap-3">
+        {/* Ponto de origem */}
+        <div className="shrink-0 relative">
+          <div className="w-11 h-11 rounded-2xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/40">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-orange-400 border-2 border-[#070b14]" />
+        </div>
+
+        {/* Trilha animada */}
+        <div className="flex-1 relative h-2 bg-white/[0.06] rounded-full overflow-hidden">
+          {/* Trilha preenchida */}
+          <div
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-orange-500 via-orange-400 to-amber-300 rounded-full transition-none"
+            style={{ width: `${progress}%` }}
+          />
+          {/* Brilho da trilha */}
+          <div
+            className="absolute inset-y-0 left-0 rounded-full opacity-40"
+            style={{
+              width: `${progress}%`,
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+              backgroundSize: '60% 100%',
+              backgroundRepeat: 'no-repeat',
+            }}
+          />
+          {/* Caminhão */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 transition-none"
+            style={{ left: `calc(${progress}% - 14px)`, display: progress <= 2 ? 'none' : 'block' }}
+          >
+            <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center shadow-xl shadow-orange-500/60 border border-orange-300/30">
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M1 3h15v13H1V3zm15 4h2.5l2.5 3v3h-5V7zM5.5 17a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm11 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Ponto de destino */}
+        <div className="shrink-0">
+          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-700 ${arrived ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-white/[0.08] border border-white/10'}`}>
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           </div>
         </div>
       </div>
 
-      {/* Destino */}
-      <div className="flex flex-col items-center gap-1.5 shrink-0">
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-500 ${progress === 100 ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-white/10'}`}>
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors duration-500 ${progress === 100 ? 'text-emerald-400' : 'text-white/30'}`}>Destino</span>
+      {/* Distância estimada */}
+      <div className="flex justify-center mt-3">
+        <span className="text-[10px] text-white/20 bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
+          Frete rápido e rastreável em tempo real
+        </span>
       </div>
     </div>
   )
@@ -200,7 +245,7 @@ export default function SolicitarFretePage() {
           ? { ...prev, endereco_origem: endereco, cidade_origem: cidade }
           : { ...prev, endereco_destino: endereco, cidade_destino: cidade }
         // Calcula distância automaticamente se ambos os endereços estiverem preenchidos
-        if (newForm.cidade_origem && newForm.cidade_destino && newForm.tipo_veiculo_necessario) {
+        if (newForm.cidade_origem && newForm.cidade_destino) {
           calcularDistanciaEValor(newForm)
         }
         return newForm
@@ -421,72 +466,94 @@ export default function SolicitarFretePage() {
     <div className="min-h-screen bg-[#070b14] relative overflow-hidden">
       <InstallBanner />
 
+      {/* Grid pattern background */}
+      <div className="fixed inset-0 pointer-events-none" style={{backgroundImage:'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)', backgroundSize:'48px 48px'}} />
 
-      {/* Glow top */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-orange-500/10 blur-[100px] pointer-events-none" />
+      {/* Glows */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-orange-500/10 blur-[120px] pointer-events-none" />
+      <div className="fixed top-40 right-0 w-[300px] h-[300px] bg-amber-500/5 blur-[100px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[400px] h-[300px] bg-orange-600/5 blur-[120px] pointer-events-none" />
 
       {/* HERO */}
-      <div className="relative pt-24 pb-0 px-4 text-center">
+      <div className="relative pt-20 pb-0 px-4 text-center">
 
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 mb-6">
-          <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 mb-8">
+          <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
           <span className="text-orange-400 text-xs font-bold uppercase tracking-widest">Fretes locais • Rápido e confiável</span>
         </div>
 
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center shadow-2xl shadow-orange-500/40">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M1 3h15v13H1V3zm15 4h2.5l2.5 3v3h-5V7zM5.5 17a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm11 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
-            </svg>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-2xl bg-orange-500/30 blur-md" />
+            <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/50 border border-orange-400/30">
+              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M1 3h15v13H1V3zm15 4h2.5l2.5 3v3h-5V7zM5.5 17a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm11 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+              </svg>
+            </div>
           </div>
           <div className="text-left">
-            <p className="text-white font-black text-xl leading-none tracking-wider">FRETES IA</p>
-            <p className="text-orange-400 text-xs font-bold tracking-[0.3em] uppercase">LOG</p>
+            <p className="text-white font-black text-2xl leading-none tracking-wider">FRETES IA</p>
+            <p className="text-orange-400 text-[11px] font-bold tracking-[0.4em] uppercase mt-0.5">LOG • PLATAFORMA</p>
           </div>
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-6xl font-black text-white leading-[1.05] tracking-tight mb-12 max-w-2xl mx-auto">
+        <h1 className="text-5xl sm:text-7xl font-black text-white leading-[1.0] tracking-tight mb-6 max-w-2xl mx-auto">
           Seu frete,{' '}
-          <span className="relative">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
+          <span className="relative inline-block">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-300 via-orange-400 to-amber-500">
               na hora certa
             </span>
-            <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
-              <path d="M0 6 Q50 1 100 6 Q150 11 200 6" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.6"/>
+            <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none" preserveAspectRatio="none">
+              <path d="M0 6 Q50 1 100 6 Q150 11 200 6" stroke="url(#ugrad)" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.8"/>
+              <defs>
+                <linearGradient id="ugrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#fb923c"/>
+                  <stop offset="100%" stopColor="#f59e0b"/>
+                </linearGradient>
+              </defs>
             </svg>
           </span>
         </h1>
 
-        <div className="max-w-md mx-auto mb-8 space-y-4">
-          <p className="text-white/40 text-base sm:text-lg">
-            Conectamos você aos melhores motoristas da região.
-          </p>
-          <p className="text-white/40 text-base sm:text-lg">
-            Solicite agora e receba confirmação pelo WhatsApp.
-          </p>
-        </div>
+        <p className="max-w-sm mx-auto mb-10 text-white/55 text-base sm:text-lg leading-relaxed">
+          Conectamos você aos melhores motoristas da região. Confirmação direto no seu WhatsApp.
+        </p>
 
         {/* Stats */}
-        <div className="flex items-center justify-center gap-6 sm:gap-10 mb-10">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-10 max-w-sm mx-auto">
           {[
             { n: '100+', label: 'Motoristas' },
             { n: '24h', label: 'Atendimento' },
             { n: '5★', label: 'Avaliação' },
-          ].map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="text-2xl font-black text-orange-400">{s.n}</p>
-              <p className="text-white/30 text-xs uppercase tracking-widest">{s.label}</p>
+          ].map((s, i) => (
+            <div key={s.label} className="flex-1 text-center bg-white/[0.04] border border-white/[0.08] rounded-2xl py-3 px-2 hover:border-orange-500/30 transition-colors">
+              <p className="text-xl font-black text-orange-400 leading-none mb-1">{s.n}</p>
+              <p className="text-white/35 text-[10px] uppercase tracking-widest">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* Animated route */}
-        <div className="max-w-xs mx-auto">
+        <div className="max-w-sm mx-auto">
           <AnimatedRoute />
         </div>
+
+        {/* CTA */}
+        <a
+          href="#form-solicitar"
+          className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-black px-8 py-4 rounded-2xl text-sm tracking-wider uppercase transition-all duration-200 shadow-xl shadow-orange-500/30 hover:shadow-orange-500/50 hover:-translate-y-0.5 mb-4"
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M1 3h15v13H1V3zm15 4h2.5l2.5 3v3h-5V7zM5.5 17a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm11 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/>
+          </svg>
+          Solicitar frete agora
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          </svg>
+        </a>
       </div>
 
       {/* TABELA DE PREÇOS */}
@@ -543,7 +610,7 @@ export default function SolicitarFretePage() {
       </div>
 
       {/* FORMULÁRIO */}
-      <div ref={formRef} className="relative px-4 pb-20 max-w-lg mx-auto">
+      <div ref={formRef} id="form-solicitar" className="relative px-4 pb-20 max-w-lg mx-auto">
         <div className="bg-white/[0.03] border border-white/[0.08] rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-2xl">
 
           <div className="mb-6">
