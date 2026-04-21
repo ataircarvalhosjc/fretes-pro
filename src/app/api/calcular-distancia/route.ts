@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Não foi possível localizar os endereços' }, { status: 422 })
   }
 
-  const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-hgv', {
+  const res = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
     method: 'POST',
     headers: {
       'Authorization': ORS_KEY,
