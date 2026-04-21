@@ -240,16 +240,14 @@ export default function SolicitarFretePage() {
       if (data.erro) return
       const endereco = [data.logradouro, data.bairro].filter(Boolean).join(', ')
       const cidade = `${data.localidade} / ${data.uf}`
-      setForm((prev) => {
-        const newForm = tipo === 'origem'
-          ? { ...prev, endereco_origem: endereco, cidade_origem: cidade }
-          : { ...prev, endereco_destino: endereco, cidade_destino: cidade }
-        // Calcula distância automaticamente se ambos os endereços estiverem preenchidos
-        if (newForm.cidade_origem && newForm.cidade_destino) {
-          calcularDistanciaEValor(newForm)
-        }
-        return newForm
-      })
+      const newForm = tipo === 'origem'
+        ? { ...form, endereco_origem: endereco, cidade_origem: cidade }
+        : { ...form, endereco_destino: endereco, cidade_destino: cidade }
+      setForm(newForm)
+      // Calcula distância automaticamente se ambos os endereços estiverem preenchidos
+      if (newForm.cidade_origem && newForm.cidade_destino) {
+        calcularDistanciaEValor(newForm)
+      }
     } catch { } finally {
       setBuscandoCep(null)
     }
