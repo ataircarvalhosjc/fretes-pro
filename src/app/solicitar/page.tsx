@@ -464,9 +464,6 @@ export default function SolicitarFretePage() {
     <div className="min-h-screen bg-[#070b14] relative overflow-hidden">
       <InstallBanner />
 
-      {/* Grid pattern background */}
-      <div className="fixed inset-0 pointer-events-none" style={{backgroundImage:'linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)', backgroundSize:'48px 48px'}} />
-
       {/* Glows */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-orange-500/10 blur-[120px] pointer-events-none" />
       <div className="fixed top-40 right-0 w-[300px] h-[300px] bg-amber-500/5 blur-[100px] pointer-events-none" />
