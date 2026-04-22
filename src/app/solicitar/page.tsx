@@ -206,10 +206,14 @@ export default function SolicitarFretePage() {
     numero_origem: '',
     endereco_origem: '',
     cidade_origem: '',
+    _cidade_nome_origem: '',
+    _uf_origem: '',
     cep_destino: '',
     numero_destino: '',
     endereco_destino: '',
     cidade_destino: '',
+    _cidade_nome_destino: '',
+    _uf_destino: '',
     descricao: '',
     tipo_veiculo_necessario: '',
     peso_kg: '',
@@ -230,6 +234,34 @@ export default function SolicitarFretePage() {
     return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`
   }
 
+  // Geocodifica cidade/UF direto do browser do usuário (Nominatim permite requisições de browsers reais)
+  async function geocodificarCidade(cidade: string, uf: string): Promise<[number, number] | null> {
+    try {
+      const q = encodeURIComponent(`${cidade} ${uf} Brasil`)
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&countrycodes=br`,
+        { headers: { 'User-Agent': 'FretesIALog/1.0 (browser)' } }
+      )
+      const data = await res.json()
+      if (!data?.[0]) return null
+      return [parseFloat(data[0].lat), parseFloat(data[0].lon)]
+    } catch {
+      return null
+    }
+  }
+
+  // Haversine — distância em linha reta entre dois pontos (lat/lon)
+  function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371
+    const dLat = (lat2 - lat1) * Math.PI / 180
+    const dLon = (lon2 - lon1) * Math.PI / 180
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  }
+
   async function buscarCep(cep: string, tipo: 'origem' | 'destino') {
     const digits = cep.replace(/\D/g, '')
     if (digits.length !== 8) return
@@ -239,14 +271,15 @@ export default function SolicitarFretePage() {
       const data = await res.json()
       if (data.erro) return
       const endereco = [data.logradouro, data.bairro].filter(Boolean).join(', ')
-      const cidade = `${data.localidade} / ${data.uf}`
+      const cidade = data.localidade
+      const uf = data.uf
+      const cidadeLabel = `${cidade} - ${uf}`
       const newForm = tipo === 'origem'
-        ? { ...form, endereco_origem: endereco, cidade_origem: cidade }
-        : { ...form, endereco_destino: endereco, cidade_destino: cidade }
+        ? { ...form, cep_origem: cep, endereco_origem: endereco, cidade_origem: cidadeLabel, _cidade_nome_origem: cidade, _uf_origem: uf }
+        : { ...form, cep_destino: cep, endereco_destino: endereco, cidade_destino: cidadeLabel, _cidade_nome_destino: cidade, _uf_destino: uf }
       setForm(newForm)
-      // Calcula distância automaticamente se ambos os endereços estiverem preenchidos
-      if (newForm.cidade_origem && newForm.cidade_destino) {
-        calcularDistanciaEValor(newForm)
+      if (newForm.cep_origem && newForm.cep_destino) {
+        calcularDistanciaEValor(newForm as typeof form)
       }
     } catch { } finally {
       setBuscandoCep(null)
@@ -254,24 +287,34 @@ export default function SolicitarFretePage() {
   }
 
   async function calcularDistanciaEValor(novoForm: typeof form) {
-    const origem = [novoForm.endereco_origem, novoForm.numero_origem, novoForm.cidade_origem].filter(Boolean).join(', ')
-    const destino = [novoForm.endereco_destino, novoForm.numero_destino, novoForm.cidade_destino].filter(Boolean).join(', ')
-    if (!novoForm.cidade_origem || !novoForm.cidade_destino) return
+    if (!novoForm.cep_origem || !novoForm.cep_destino) return
     setCalculando(true)
+    setDistanciaKm(null)
+    setValorEstimado(null)
     try {
-      const res = await fetch('/api/calcular-distancia', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origem, destino }),
-      })
-      const data = await res.json()
-      if (!res.ok) return
-      setDistanciaKm(data.distanciaKm)
+      const cidadeO = novoForm._cidade_nome_origem || novoForm.cidade_origem.split(' - ')[0]
+      const ufO = novoForm._uf_origem || novoForm.cidade_origem.split(' - ')[1] || ''
+      const cidadeD = novoForm._cidade_nome_destino || novoForm.cidade_destino.split(' - ')[0]
+      const ufD = novoForm._uf_destino || novoForm.cidade_destino.split(' - ')[1] || ''
+
+      const [coordO, coordD] = await Promise.all([
+        geocodificarCidade(cidadeO, ufO),
+        geocodificarCidade(cidadeD, ufD),
+      ])
+
+      if (!coordO || !coordD) return
+
+      // Haversine × 1.35 = estimativa de distância por estrada
+      const linhaReta = haversineKm(coordO[0], coordO[1], coordD[0], coordD[1])
+      const kmEstrada = Math.round(linhaReta * 1.35)
+
+      setDistanciaKm(kmEstrada)
       if (novoForm.tipo_veiculo_necessario) {
-        const valor = calcularFrete(data.distanciaKm, novoForm.tipo_veiculo_necessario)
-        setValorEstimado(valor)
+        setValorEstimado(calcularFrete(kmEstrada, novoForm.tipo_veiculo_necessario))
       }
-    } catch { } finally {
+    } catch (e) {
+      console.error('Erro ao calcular distância:', e)
+    } finally {
       setCalculando(false)
     }
   }

@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+async function geocodeTexto(query: string): Promise<[number, number] | null> {
+  try {
+    const res = await fetch(
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`,
+      { headers: { 'User-Agent': 'FretesIALog/1.0' } }
+    )
+    const data = await res.json()
+    // Filtra apenas resultados do Brasil
+    const br = data?.features?.find(
+      (f: { properties: { country?: string }; geometry: { coordinates: [number, number] } }) =>
+        f.properties?.country === 'Brazil' || f.properties?.country === 'Brasil'
+    ) ?? data?.features?.[0]
+    if (!br) return null
+    const [lon, lat] = br.geometry.coordinates
+    return [lon, lat]
+  } catch {
+    return null
+  }
+}
+
 async function geocodeCep(cep: string): Promise<[number, number] | null> {
   try {
     const digits = cep.replace(/\D/g, '')
@@ -7,32 +27,21 @@ async function geocodeCep(cep: string): Promise<[number, number] | null> {
     const data = await res.json()
     if (data.erro) return null
 
-    // Busca coordenadas pelo endereço via Nominatim (OpenStreetMap) — gratuito
-    const endereco = `${data.logradouro || ''} ${data.bairro || ''} ${data.localidade} ${data.uf} Brasil`
-    const geoRes = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=json&limit=1&countrycodes=br`,
-      { headers: { 'User-Agent': 'FretesIALog/1.0' } }
-    )
-    const geoData = await geoRes.json()
-    if (!geoData?.[0]) return null
-    return [parseFloat(geoData[0].lon), parseFloat(geoData[0].lat)]
+    // Tenta primeiro com logradouro+bairro, depois só cidade+UF como fallback
+    const queryCompleta = [data.logradouro, data.bairro, data.localidade, data.uf, 'Brasil']
+      .filter(Boolean).join(' ')
+    const queryCidade = `${data.localidade} ${data.uf} Brasil`
+
+    const coord = await geocodeTexto(queryCompleta)
+    if (coord) return coord
+    return geocodeTexto(queryCidade)
   } catch {
     return null
   }
 }
 
 async function geocodeEndereco(endereco: string): Promise<[number, number] | null> {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco + ' Brasil')}&format=json&limit=1&countrycodes=br`,
-      { headers: { 'User-Agent': 'FretesIALog/1.0' } }
-    )
-    const data = await res.json()
-    if (!data?.[0]) return null
-    return [parseFloat(data[0].lon), parseFloat(data[0].lat)]
-  } catch {
-    return null
-  }
+  return geocodeTexto(endereco + ' Brasil')
 }
 
 export async function POST(request: NextRequest) {
