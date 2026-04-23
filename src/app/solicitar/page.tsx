@@ -837,7 +837,7 @@ export default function SolicitarFretePage() {
                     <span className="text-[10px] text-white/50 bg-white/10 px-2 py-1 rounded-lg font-mono">{distanciaKm} km</span>
                   </div>
                   <p className="text-white/40 text-[10px] mb-4 leading-relaxed">
-                    Toque para escolher. O valor final é definido pelo transportador conforme o tipo de carga, horário e dificuldade de acesso.
+                    Toque para escolher. O valor final é definido pelo transportador, conforme o tipo de carga, horário e dificuldade de acesso. Esse valor pode ser maior ou menor, é somente uma estimativa.
                   </p>
                   <div className="space-y-2">
                     {Object.entries(TABELA_PRECOS_PUBLICO).map(([key, v]) => {
