@@ -827,11 +827,18 @@ export default function SolicitarFretePage() {
                 </div>
               )}
               {distanciaKm && !calculando && (
-                <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl px-4 py-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] text-orange-400 uppercase tracking-widest font-bold">Valores estimados</span>
-                    <span className="text-[10px] text-white/40 bg-white/5 px-2 py-1 rounded-lg">{distanciaKm} km</span>
+                <div className="border-2 border-orange-500/40 bg-gradient-to-b from-orange-500/10 to-orange-500/5 rounded-2xl px-4 py-5">
+                  {/* Cabeçalho */}
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                      <span className="text-orange-400 text-xs font-black uppercase tracking-widest">Selecione o veículo</span>
+                    </div>
+                    <span className="text-[10px] text-white/50 bg-white/10 px-2 py-1 rounded-lg font-mono">{distanciaKm} km</span>
                   </div>
+                  <p className="text-white/40 text-[10px] mb-4 leading-relaxed">
+                    Toque para escolher. O valor final é definido pelo freteiro conforme o tipo de carga, horário e dificuldade de acesso.
+                  </p>
                   <div className="space-y-2">
                     {Object.entries(TABELA_PRECOS_PUBLICO).map(([key, v]) => {
                       const valor = calcularFrete(distanciaKm, key)
@@ -843,20 +850,32 @@ export default function SolicitarFretePage() {
                             set('tipo_veiculo_necessario', key)
                             setValorEstimado(valor)
                           }}
-                          className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${selecionado ? 'bg-orange-500/20 border border-orange-500/50' : 'bg-white/5 border border-white/5 hover:bg-white/10'}`}
+                          className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all border-2 ${
+                            selecionado
+                              ? 'bg-orange-500/25 border-orange-500 shadow-lg shadow-orange-500/20'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                          }`}
                         >
-                          <div className="flex items-center gap-2">
-                            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${selecionado ? 'border-orange-500 bg-orange-500' : 'border-white/20'}`}>
-                              {selecionado && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          <div className="flex items-center gap-3">
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selecionado ? 'border-orange-500 bg-orange-500' : 'border-white/30'}`}>
+                              {selecionado && <div className="w-2 h-2 rounded-full bg-white" />}
                             </div>
-                            <span className="text-white text-xs font-semibold">{v.label}</span>
+                            <span className={`text-sm font-bold ${selecionado ? 'text-white' : 'text-white/70'}`}>{v.label}</span>
                           </div>
-                          <span className={`text-sm font-black ${selecionado ? 'text-orange-400' : 'text-white/70'}`}>{valor ? formatarPreco(valor) : '--'}</span>
+                          <div className="text-right">
+                            <span className={`text-base font-black ${selecionado ? 'text-orange-400' : 'text-white/60'}`}>{valor ? formatarPreco(valor) : '--'}</span>
+                            <p className="text-[9px] text-white/25 leading-none mt-0.5">a partir de</p>
+                          </div>
                         </div>
                       )
                     })}
                   </div>
-                  <p className="text-[10px] text-white/25 mt-3">⚠️ Valores estimados. Podem variar conforme tipo de carga, horário e condições da rota.</p>
+                  <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                    <span className="text-yellow-400 text-sm shrink-0 mt-0.5">⚠️</span>
+                    <p className="text-[10px] text-yellow-400/80 leading-relaxed">
+                      <strong>Valores de referência.</strong> O preço final é negociado com o freteiro e pode variar conforme volume, peso, andar, horário e dificuldade de acesso.
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -897,14 +916,15 @@ export default function SolicitarFretePage() {
               </div>
 
               <div>
-                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Observações</label>
+                <label className="block text-[10px] text-white/30 uppercase tracking-widest mb-2">Descreva sua encomenda em detalhes</label>
                 <textarea
                   className={`${inputClass} resize-none`}
-                  placeholder="Algo que precisamos saber? (horário, acesso, etc.)"
-                  rows={2}
+                  placeholder={`Descreva tudo que será transportado:\n• Quantos volumes / peças?\n• Tamanho e peso aproximado?\n• Tem escada ou elevador?\n• Horário preferido?\n• Alguma dificuldade de acesso?`}
+                  rows={5}
                   value={form.observacoes}
                   onChange={(e) => set('observacoes', e.target.value)}
                 />
+                <p className="text-white/25 text-[10px] mt-1.5">Quanto mais detalhes, mais preciso será o orçamento do freteiro.</p>
               </div>
 
               {erro && <p className="text-red-400 text-xs bg-red-500/10 rounded-xl px-4 py-3">{erro}</p>}
