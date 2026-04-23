@@ -7,7 +7,7 @@ export type FaixaPreco = {
 }
 
 export const TABELA_PRECOS: Record<string, FaixaPreco> = {
-  moto:        { label: 'Moto',           base: 30,  km_5_15: 3.00, km_15_30: 2.00, km_30plus: 1.50 },
+  moto:        { label: 'Moto (até 5 kg)', base: 20,  km_5_15: 1.90, km_15_30: 1.90, km_30plus: 1.90 },
   utilitario:  { label: 'Van / Pick-up',  base: 60,  km_5_15: 5.00, km_15_30: 3.50, km_30plus: 2.50 },
   furgao:      { label: 'Furgão',         base: 80,  km_5_15: 6.00, km_15_30: 4.00, km_30plus: 3.00 },
   vuc:         { label: 'VUC / ¾',        base: 100, km_5_15: 7.00, km_15_30: 5.00, km_30plus: 3.50 },
