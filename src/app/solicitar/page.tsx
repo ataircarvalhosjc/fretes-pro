@@ -837,7 +837,7 @@ export default function SolicitarFretePage() {
                     <span className="text-[10px] text-white/50 bg-white/10 px-2 py-1 rounded-lg font-mono">{distanciaKm} km</span>
                   </div>
                   <p className="text-white/40 text-[10px] mb-4 leading-relaxed">
-                    Toque para escolher. O valor final é definido pelo freteiro conforme o tipo de carga, horário e dificuldade de acesso.
+                    Toque para escolher. O valor final é definido pelo transportador conforme o tipo de carga, horário e dificuldade de acesso.
                   </p>
                   <div className="space-y-2">
                     {Object.entries(TABELA_PRECOS_PUBLICO).map(([key, v]) => {
@@ -873,7 +873,7 @@ export default function SolicitarFretePage() {
                   <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-2.5 flex items-start gap-2">
                     <span className="text-yellow-400 text-sm shrink-0 mt-0.5">⚠️</span>
                     <p className="text-[10px] text-yellow-400/80 leading-relaxed">
-                      <strong>Valores de referência.</strong> O preço final é negociado com o freteiro e pode variar conforme volume, peso, andar, horário e dificuldade de acesso.
+                      <strong>Valores de referência.</strong> O preço final é negociado com o transportador e pode variar conforme volume, peso, andar, horário e dificuldade de acesso.
                     </p>
                   </div>
                 </div>
@@ -924,7 +924,7 @@ export default function SolicitarFretePage() {
                   value={form.observacoes}
                   onChange={(e) => set('observacoes', e.target.value)}
                 />
-                <p className="text-white/25 text-[10px] mt-1.5">Quanto mais detalhes, mais preciso será o orçamento do freteiro.</p>
+                <p className="text-white/25 text-[10px] mt-1.5">Quanto mais detalhes, mais preciso será o orçamento do transportador.</p>
               </div>
 
               {erro && <p className="text-red-400 text-xs bg-red-500/10 rounded-xl px-4 py-3">{erro}</p>}
