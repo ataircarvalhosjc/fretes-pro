@@ -837,7 +837,7 @@ export default function SolicitarFretePage() {
                     <span className="text-[10px] text-white/50 bg-white/10 px-2 py-1 rounded-lg font-mono">{distanciaKm} km</span>
                   </div>
                   <p className="text-white/40 text-[10px] mb-4 leading-relaxed">
-                    Toque para escolher. O valor final é definido pelo transportador, conforme o tipo de carga, horário e dificuldade de acesso. Esse valor pode ser maior ou menor, é somente uma estimativa.
+                    Toque para escolher o veículo ideal para sua carga. Após análise, entraremos em contato pelo WhatsApp com o orçamento final.
                   </p>
                   <div className="space-y-2">
                     {Object.entries(TABELA_PRECOS_PUBLICO).map(([key, v]) => {
@@ -862,18 +862,14 @@ export default function SolicitarFretePage() {
                             </div>
                             <span className={`text-sm font-bold ${selecionado ? 'text-white' : 'text-white/70'}`}>{v.label}</span>
                           </div>
-                          <div className="text-right">
-                            <span className={`text-base font-black ${selecionado ? 'text-orange-400' : 'text-white/60'}`}>{valor ? formatarPreco(valor) : '--'}</span>
-                            <p className="text-[9px] text-white/25 leading-none mt-0.5">a partir de</p>
-                          </div>
                         </div>
                       )
                     })}
                   </div>
-                  <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-3 py-2.5 flex items-start gap-2">
-                    <span className="text-yellow-400 text-sm shrink-0 mt-0.5">⚠️</span>
-                    <p className="text-[10px] text-yellow-400/80 leading-relaxed">
-                      <strong>Valores de referência.</strong> O preço final é negociado com o transportador e pode variar conforme volume, peso, andar, horário e dificuldade de acesso.
+                  <div className="mt-4 bg-orange-500/10 border border-orange-500/20 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                    <span className="text-orange-400 text-sm shrink-0 mt-0.5">📲</span>
+                    <p className="text-[10px] text-orange-400/80 leading-relaxed">
+                      <strong>Orçamento personalizado.</strong> Após enviar sua solicitação, nossa equipe analisa os detalhes e envia o valor final pelo WhatsApp em poucos minutos.
                     </p>
                   </div>
                 </div>
